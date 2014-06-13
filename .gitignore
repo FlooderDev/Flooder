@@ -1,0 +1,5 @@
+target/classes
+target/surefire
+target/maven-archiver
+/target/
+nb*

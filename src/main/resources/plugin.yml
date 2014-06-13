@@ -1,0 +1,13 @@
+authors: [kitskub]
+main: me.kitskub.paintball.Paintball
+name: Paintball
+version: '1.0'
+depend: [GameLib]
+# Commands
+commands:
+  pb:
+    description: Paintball user commands
+  pba:
+    description: Paintball admin commands
+# Permission nodes
+permissions:
