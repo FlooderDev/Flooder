@@ -164,7 +164,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         if (!freshPlayers.remove(player) & !players.remove(player)) return false;//TODO message that not in game?
         getOwningPlugin().getStatManager().get(player).addPoints(player.getStat().get(this).getHits().size() * Defaults.Config.SKILL_POINTS_FROM_HIT.getGlobalInt());
         player.leaveGame();
-        player.setTeam(null);
         player.setClass(null);
         if (player.getPlayer().isOnline()) player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         leavingArena(player);
@@ -495,7 +494,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         if (killer != null) {
             killer.getPlayer().playSound(killed.getPlayer().getLocation(), Sound.SUCCESSFUL_HIT, 1, 1);
         }
-        killedPlayer.teleport(spawnsTaken.get(killed.getPlayerName()));
+        leave(killed);
         Bukkit.getPluginManager().callEvent(new PlayerKilledEvent(this, killed, killer));
     }
 
