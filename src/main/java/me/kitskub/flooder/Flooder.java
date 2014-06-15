@@ -1,5 +1,11 @@
 package me.kitskub.flooder;
 
+import me.kitskub.flooder.Defaults.Commands;
+import me.kitskub.flooder.Defaults.Lang;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.core.FArena;
+import me.kitskub.flooder.core.FClass;
+import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.ClassPlugin;
 import me.kitskub.gamelib.GameRewardManager;
 import me.kitskub.gamelib.Games;
@@ -10,14 +16,10 @@ import me.kitskub.gamelib.framework.GameMaster;
 import me.kitskub.gamelib.framework.Manager;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.impl.StatManager;
-import me.kitskub.gamelib.listeners.InfoSignListener;
+import me.kitskub.gamelib.listeners.general.InfoSignListener;
+import me.kitskub.gamelib.listeners.general.PlayerAutoJoinListener;
 import me.kitskub.gamelib.register.GLPermission;
-import me.kitskub.flooder.Defaults.Commands;
-import me.kitskub.flooder.Defaults.Lang;
-import me.kitskub.flooder.Defaults.Perms;
-import me.kitskub.flooder.core.FArena;
-import me.kitskub.flooder.core.FClass;
-import me.kitskub.flooder.core.FGame;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -32,6 +34,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 	private static Manager<FClass> classManager;
 	private static GameRewardManager gRManager;
 	private static StatManager statManager;
+    private static PlayerAutoJoinListener pajListener;
     private final CommandHandler fCH = new CommandHandler(CMD_USER, this);
     private final CommandHandler faCH = new CommandHandler(CMD_ADMIN, this);
 
@@ -56,6 +59,8 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 			Logging.info("  " + c.getName());
 		}
 		Games.register(this);
+        pajListener = new PlayerAutoJoinListener(gameMaster.getGames().toArray(new FGame[0]));
+        Bukkit.getPluginManager().registerEvents(pajListener, this);
 		Logging.info("Enabled.");
 	}
 

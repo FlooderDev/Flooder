@@ -1,8 +1,8 @@
 package me.kitskub.flooder.listeners;
 
-import me.kitskub.gamelib.listeners.ClickSession;
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.core.FArena;
+import me.kitskub.gamelib.listeners.general.ClickSession;
 import me.kitskub.gamelib.utils.Cuboid;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;

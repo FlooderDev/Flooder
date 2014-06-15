@@ -540,6 +540,10 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         return chests.add(c);
     }
 
+    public boolean isFull() {
+        return spawnsTaken.size() >= active.spawnpoints.size();
+    }
+
     public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
     private static class PBGameCreator implements GameMasterImpl.GameCreator<FGame> {
         public FGame createGame(String name) {
