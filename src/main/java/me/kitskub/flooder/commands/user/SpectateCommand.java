@@ -1,13 +1,13 @@
 package me.kitskub.flooder.commands.user;
 
+import me.kitskub.flooder.Defaults.Config;
+import me.kitskub.flooder.Defaults.Lang;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder; 
+import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.commands.PlayerCommand;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Defaults.Config;
-import me.kitskub.flooder.Defaults.Lang;
-import me.kitskub.flooder.Flooder;
-
 import org.bukkit.entity.Player;
 
 public class SpectateCommand extends PlayerCommand {
@@ -28,7 +28,7 @@ public class SpectateCommand extends PlayerCommand {
 			ChatUtils.helpCommand(player, this);
 			return;
 		}
-		game = Flooder.gameMaster().getGame(name);
+		FGame game = Flooder.gameMaster().getGame(name);
 		if (game == null) {
 			ChatUtils.error(player, Lang.NOT_EXIST.getMessage().replace("<item>", name));
 			return;

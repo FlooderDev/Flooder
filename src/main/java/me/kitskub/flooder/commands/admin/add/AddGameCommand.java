@@ -25,7 +25,7 @@ public class AddGameCommand extends PlayerCommand {
 		    ChatUtils.helpCommand(player, this);
 		    return;
 	    }
-	    game = Flooder.gameMaster().getGame(args[0]);
+	    FGame game = Flooder.gameMaster().getGame(args[0]);
 	    if (game != null) {
 		    ChatUtils.error(player, "%s already exists.", args[0]);
 		    return;
@@ -36,7 +36,7 @@ public class AddGameCommand extends PlayerCommand {
 	    	ChatUtils.error(player, "Creation of game %s was cancelled.", args[0]);
             return;
 	    }
-        FGame game = Flooder.gameMaster().createGame(args[0]);
+        game = Flooder.gameMaster().createGame(args[0]);
 	    GameCreatedEvent event = new GameCreatedEvent(game);
         Bukkit.getPluginManager().callEvent(event);
         ChatUtils.send(player, ChatColor.GREEN, "%s has been created. Now you must add an arena.", args[0]);

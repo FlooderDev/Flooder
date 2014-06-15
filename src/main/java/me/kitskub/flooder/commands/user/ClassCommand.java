@@ -22,7 +22,7 @@ public class ClassCommand extends PlayerCommand {
             return;
         }
         User user = User.get(player);
-		game = user.getGameEntry().getGame(FGame.class);
+		FGame game = user.getGameEntry().getGame(FGame.class);
 		if (game == null) {
 			ChatUtils.error(player, "You are currently not in a game.");
 			return;
@@ -31,7 +31,7 @@ public class ClassCommand extends PlayerCommand {
             ChatUtils.error(player, "You cannot do that while playing!");
             return;
         }
-        FClass selected = ((FGame) game).getOwningPlugin().getClassManager().get(args[0]);
+        FClass selected = game.getOwningPlugin().getClassManager().get(args[0]);
         if (selected == null) {
             ChatUtils.error(player, "That class does not exist!");
             return;

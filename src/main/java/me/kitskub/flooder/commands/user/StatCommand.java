@@ -1,12 +1,12 @@
 package me.kitskub.flooder.commands.user;
 
+import me.kitskub.flooder.Defaults.Config;
+import me.kitskub.flooder.Defaults.Lang;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.commands.Command;
 import me.kitskub.gamelib.utils.ChatUtils;
-import me.kitskub.flooder.Defaults.Config;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Defaults.Lang;
-import me.kitskub.flooder.Flooder;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -24,7 +24,7 @@ public class StatCommand extends Command {
 			return;
 		}
 
-		game = Flooder.gameMaster().getGame(name);
+		FGame game = Flooder.gameMaster().getGame(name);
 		if (game == null) {
 			ChatUtils.error(cs, Lang.NOT_EXIST.getMessage().replace("<item>", name));
 			return;

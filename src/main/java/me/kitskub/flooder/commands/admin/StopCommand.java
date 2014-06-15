@@ -1,11 +1,11 @@
 package me.kitskub.flooder.commands.admin;
 
-import me.kitskub.gamelib.commands.Command;
-import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Defaults.Perms; 
 import me.kitskub.flooder.Flooder;
-
+import me.kitskub.flooder.core.FGame;
+import me.kitskub.gamelib.commands.Command;
+import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.command.CommandSender;
 
 public class StopCommand extends Command {
@@ -22,7 +22,7 @@ public class StopCommand extends Command {
 			return;
 		}
 		
-		game = Flooder.gameMaster().getGame(name);
+		FGame game = Flooder.gameMaster().getGame(name);
 		if (game == null) {
 		    ChatUtils.error(cs, "%s does not exist.", name);
 		    return;

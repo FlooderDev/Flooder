@@ -24,7 +24,7 @@ public class SetEnabledCommand extends Command {
 	    }
         Enableable e;
         if ("game".equalsIgnoreCase(args[0])) {
-            e = game = Flooder.gameMaster().getGame(args[1]);
+            e = Flooder.gameMaster().getGame(args[1]);
         } else if ("arena".equalsIgnoreCase(args[0])) {
             e = Flooder.gameMaster().getArena(args[1]);
         } else {

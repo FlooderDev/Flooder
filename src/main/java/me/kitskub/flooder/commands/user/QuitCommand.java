@@ -1,13 +1,12 @@
 package me.kitskub.flooder.commands.user;
 
 import java.util.Arrays;
-
-import me.kitskub.gamelib.commands.PlayerCommand;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.core.FGame;
+import me.kitskub.gamelib.commands.PlayerCommand; 
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Flooder;
-
 import org.bukkit.entity.Player;
 
 public class QuitCommand extends PlayerCommand {
@@ -20,7 +19,7 @@ public class QuitCommand extends PlayerCommand {
 	@Override
 	public void handlePlayer(Player player, String cmd, String[] args) {
         User user = User.get(player);
-		game = user.getGameEntry().getGame();
+		FGame game = user.getGameEntry().getGame(FGame.class);
 		if (game == null) {
 			ChatUtils.error(player, "You are currently not in a game.");
 			return;
