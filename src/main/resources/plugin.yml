@@ -1,13 +1,13 @@
 authors: [kitskub]
-main: me.kitskub.paintball.Paintball
-name: Paintball
+main: me.kitskub.flooder.Flooder
+name: Flooder
 version: '1.0'
 depend: [GameLib]
 # Commands
 commands:
-  pb:
-    description: Paintball user commands
-  pba:
-    description: Paintball admin commands
+  f:
+    description: Flooder user commands
+  fa:
+    description: Flooder admin commands
 # Permission nodes
 permissions:

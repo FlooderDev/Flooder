@@ -24,7 +24,6 @@ import me.kitskub.flooder.commands.admin.set.SetCuboidCommand;
 import me.kitskub.flooder.commands.admin.set.SetEnabledCommand;
 import me.kitskub.flooder.commands.admin.set.SetHelp;
 import me.kitskub.flooder.commands.admin.set.SetSkillCommand;
-import me.kitskub.flooder.commands.admin.set.SetSpawnCommand;
 import me.kitskub.flooder.commands.admin.set.SetWarpCommand;
 import me.kitskub.flooder.commands.admin.set.SetZoneCommand;
 import me.kitskub.flooder.commands.user.AboutCommand;
@@ -340,7 +339,6 @@ public class Defaults {
 	ADMIN_SET_HELP(new SetHelp()),
     ADMIN_SET_CUBOID(new SetCuboidCommand()),
 	ADMIN_SET_ENABLED(new SetEnabledCommand()),
-	ADMIN_SET_SPAWN(new SetSpawnCommand()),
 	ADMIN_SET_SKILL(new SetSkillCommand()),
 	ADMIN_SET_WARP(new SetWarpCommand()),
     ADMIN_SET_ZONE(new SetZoneCommand()),

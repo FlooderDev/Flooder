@@ -1,15 +1,15 @@
 package me.kitskub.flooder.commands.admin.add;
 
-import me.kitskub.gamelib.commands.PlayerCommand;
-import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.Defaults.Commands;
 import me.kitskub.flooder.Defaults.Lang; 
 import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FClass;
-import me.kitskub.gamelib.listeners.general.SessionCallbacks;
+import me.kitskub.flooder.listeners.FSessionCallbacks;
+import me.kitskub.gamelib.commands.PlayerCommand;
 import me.kitskub.gamelib.listeners.general.SessionListener;
+import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -36,7 +36,7 @@ public class AddClassSignCommand extends PlayerCommand {
             ChatUtils.error(player, Lang.NOT_EXIST.getMessage().replace("<item>", args[1]));
             return;
         }
-        SessionListener.addSession(SessionCallbacks.classSignAdder, player, arena.getOwningPlugin(), arena, "class", c);
+        SessionListener.addSession(FSessionCallbacks.classSignAdder, player, arena.getOwningPlugin(), arena, "class", c);
 		ChatUtils.send(player, ChatColor.GREEN, "Left-click the sign to add it as a class sign.");
 	}
 

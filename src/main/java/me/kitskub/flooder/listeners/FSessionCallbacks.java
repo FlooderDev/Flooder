@@ -2,6 +2,9 @@ package me.kitskub.flooder.listeners;
 
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.core.FArena;
+import me.kitskub.gamelib.Team;
+import me.kitskub.gamelib.framework.impl.arena.BaseArena;
+import me.kitskub.gamelib.framework.impl.arena.MultiTeamedZoneArena;
 import me.kitskub.gamelib.listeners.general.ClickSession;
 import me.kitskub.gamelib.utils.Cuboid;
 import org.bukkit.event.block.Action;
@@ -55,6 +58,44 @@ public class FSessionCallbacks {
 				ChatUtils.send(event.getPlayer(), "Second corner and cuboid set.");
                 return true;
 			}
+        }
+    };
+
+    public static final ClickSession.Callback<FArena> mainCuboidAdder = new ClickSession.Callback<FArena>() {
+        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
+			if (session.getBlocks().size() < 1) {
+				session.clicked(event.getClickedBlock());
+				ChatUtils.send(event.getPlayer(), "First corner set.");
+                return false;
+			} else {
+                FArena region = session.getObject();
+                region.mainCuboid = new Cuboid(session.getBlocks().get(0).getLocation(), event.getClickedBlock().getLocation());
+				ChatUtils.send(event.getPlayer(), "Second corner and cuboid set.");
+                return true;
+			}
+        }
+    };
+
+    public static final ClickSession.Callback<FArena> lobbyCuboidAdder = new ClickSession.Callback<FArena>() {
+        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
+			if (session.getBlocks().size() < 1) {
+				session.clicked(event.getClickedBlock());
+				ChatUtils.send(event.getPlayer(), "First corner set.");
+                return false;
+			} else {
+                FArena region = session.getObject();
+                region.lobbyCuboid = new Cuboid(session.getBlocks().get(0).getLocation(), event.getClickedBlock().getLocation());
+				ChatUtils.send(event.getPlayer(), "Second corner and cuboid set.");
+                return true;
+			}
+        }
+    };
+
+    public static final ClickSession.Callback<FArena> classSignAdder = new ClickSession.Callback<FArena>() {
+        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
+            session.getObject().signs.put(event.getClickedBlock().getLocation(), (me.kitskub.gamelib.framework.Class) session.getData().get("class"));
+            ChatUtils.send(event.getPlayer(), "Class sign set.");
+            return true;
         }
     };
 }

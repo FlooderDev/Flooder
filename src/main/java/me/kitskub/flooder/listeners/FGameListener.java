@@ -58,7 +58,7 @@ public class FGameListener implements Listener {
         if (user.getGameEntry().getGame() != game) return;
         boolean cancel = false;
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && game.getState().isPreGame()) {
-            Map<Location, me.kitskub.gamelib.framework.Class> signs = game.getActiveArena().getLobby().getSigns();
+            Map<Location, me.kitskub.gamelib.framework.Class> signs = game.getActiveArena().signs;
             if (signs.containsKey(event.getClickedBlock().getLocation())) {
                 me.kitskub.gamelib.framework.Class clickedClass = signs.get(event.getClickedBlock().getLocation());
                 user.setClass(clickedClass);

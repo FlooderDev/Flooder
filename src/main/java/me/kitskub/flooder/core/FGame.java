@@ -135,7 +135,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    Location loc = getNextOpenSpawnPoint();
 	    spawnsTaken.put(player.getPlayerName(), loc);
         freshPlayers.add(player);
-        joiningArena(player, active.getLobbyWarp());
+        joiningArena(player, active.lobbyWarp);
         player.setClass(FClass.blank);
         setPlayerReady(player);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
@@ -178,7 +178,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         player.setGame(this, User.GameEntry.Type.SPECTATING);
         spectating.add(player);
         if (!player.isBackSet()) player.setBackLocation();//TODO shouldn't use this method when leaving game. Split up.
-        joiningArena(player, active.getSpecWarp());
+        joiningArena(player, active.specWarp);
     }
 
     public void leaveSpectate(User player) {

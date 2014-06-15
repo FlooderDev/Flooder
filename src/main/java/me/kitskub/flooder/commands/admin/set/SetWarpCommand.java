@@ -32,9 +32,9 @@ public class SetWarpCommand extends PlayerCommand {
 	    String type = args[1];
         Location loc = player.getLocation();
         if ("lobby".equalsIgnoreCase(type)) {
-            arena.set(RegionPoint.LOBBY_WARP, loc, arena.getLobbyArea());
+            arena.lobbyWarp = loc;
         } else if ("spectator".equalsIgnoreCase(type)) {
-            arena.set(RegionPoint.SPEC_WARP, loc, arena.getSpecArea());
+            arena.specWarp = loc;
         } else {
             ChatUtils.error(player, "Invalid type!");
             return;
@@ -49,7 +49,7 @@ public class SetWarpCommand extends PlayerCommand {
 
 	@Override
 	public String getLocalUsage() {
-		return "warp <arena> <spectator|lobby>";
+		return "warp <arena> <lobby|spectator>";
 	}
 	
 }

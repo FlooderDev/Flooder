@@ -1,14 +1,14 @@
 package me.kitskub.flooder.commands.admin.set;
 
-import me.kitskub.gamelib.commands.PlayerCommand;
-import me.kitskub.gamelib.utils.ChatUtils; 
 import me.kitskub.flooder.Defaults.Commands;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FArena;
-import me.kitskub.gamelib.listeners.general.SessionCallbacks;
+import me.kitskub.flooder.listeners.FSessionCallbacks;
+import me.kitskub.gamelib.commands.PlayerCommand;
 import me.kitskub.gamelib.listeners.general.SessionListener;
+import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.entity.Player;
 
 public class SetCuboidCommand extends PlayerCommand {
@@ -31,11 +31,9 @@ public class SetCuboidCommand extends PlayerCommand {
 	    }
 	    String type = args[1];
         if ("main".equalsIgnoreCase(type)) {
-             SessionListener.addSession(SessionCallbacks.mainCuboidAdder, player, arena.getOwningPlugin(), arena);
+             SessionListener.addSession(FSessionCallbacks.mainCuboidAdder, player, arena.getOwningPlugin(), arena);
         } else if ("lobby".equalsIgnoreCase(type)) {
-            SessionListener.addSession(SessionCallbacks.lobbyCuboidAdder, player, arena.getOwningPlugin(), arena);
-        } else if ("spectator".equalsIgnoreCase(type)) {
-            SessionListener.addSession(SessionCallbacks.specCuboidAdder, player, arena.getOwningPlugin(), arena);
+            SessionListener.addSession(FSessionCallbacks.lobbyCuboidAdder, player, arena.getOwningPlugin(), arena);
         } else {
             ChatUtils.error(player, "Invalid type!");
             return;
@@ -50,7 +48,7 @@ public class SetCuboidCommand extends PlayerCommand {
 
 	@Override
 	public String getLocalUsage() {
-		return "cuboid <arena name> [main|lobby|spectator]";
+		return "cuboid <arena name> [main|lobby]";
 	}
 	
 }
