@@ -130,6 +130,8 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    spawnsTaken.put(player.getPlayerName(), loc);
         freshPlayers.add(player);
         joiningArena(player, active.getLobbyWarp());
+        player.setClass(FClass.blank);
+        setPlayerReady(player);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
 

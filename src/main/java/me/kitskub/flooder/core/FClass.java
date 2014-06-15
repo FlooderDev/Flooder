@@ -7,11 +7,9 @@ import java.util.Map;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.Perm.AbstractPerm;
 import me.kitskub.gamelib.framework.Class;
-import me.kitskub.gamelib.framework.EffectItem;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Logging;
-import me.kitskub.flooder.Flooder;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +20,7 @@ import org.bukkit.permissions.PermissionAttachment;
 
 @SerializableAs("TBClass")
 public class FClass implements Class {
+    public static final FClass blank = new FClass("Blank");
     private final String name;
     private final List<ItemStack> items;
     private final Map<String,Boolean> perms;
