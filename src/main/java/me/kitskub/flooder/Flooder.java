@@ -18,13 +18,11 @@ import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FClass;
 import me.kitskub.flooder.core.FGame;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FArena> {
@@ -43,6 +41,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 		Logging.init();
 
 		ConfigurationSerialization.registerClass(FClass.class, "TBClass");
+        ConfigurationSerialization.registerClass(Item.class, "Item");
 		//None of these should access files on init
 		gameMaster = new GameMasterImpl<Flooder, FGame, FArena>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
 		classManager = new Manager<FClass>(FClass.class);

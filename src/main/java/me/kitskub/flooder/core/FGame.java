@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import me.kitskub.flooder.Defaults;
+import me.kitskub.flooder.Defaults.Config;
+import me.kitskub.flooder.Defaults.Lang;
+import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.listeners.FGameListener;
 import me.kitskub.gamelib.GameCountdown;
 import me.kitskub.gamelib.GameLib;
 import me.kitskub.gamelib.GameRewardManager;
@@ -24,15 +29,11 @@ import me.kitskub.gamelib.games.DataSave;
 import me.kitskub.gamelib.stats.PlayerStat;
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.config.ConfigSection;
-import me.kitskub.flooder.Defaults;
-import me.kitskub.flooder.Defaults.Config;
-import me.kitskub.flooder.Defaults.Lang;
-import me.kitskub.flooder.Flooder;
-import me.kitskub.flooder.listeners.FGameListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Sound;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.HandlerList;
 
@@ -51,6 +52,8 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	private final Map<String, Location> spawnsTaken;
     //Listeners
     private final FGameListener listener;
+    //Temp
+    private final Set<Chest> chests;
 
     public FGame(String name) {
         this.name = name;
@@ -65,6 +68,8 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         this.spawnsTaken = new HashMap<String, Location>();
 
         this.listener = new FGameListener(this);
+
+        this.chests = new HashSet<Chest>();
     }
 
     public String getName() {
@@ -442,6 +447,11 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         active = null;
 
         HandlerList.unregisterAll(listener);
+
+        for (Chest c : chests) {
+            c.getBlockInventory().clear();
+        }
+        chests.clear();
     }
 
 	public Location getNextOpenSpawnPoint() {
@@ -523,6 +533,10 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 
     public int pointPollInterval() {
         return 0;
+    }
+
+    public boolean addChest(Chest c) {
+        return chests.add(c);
     }
 
     public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
