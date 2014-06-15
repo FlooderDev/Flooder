@@ -1,7 +1,6 @@
 package me.kitskub.flooder.listeners;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +12,9 @@ import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -23,11 +23,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class FGameListener implements Listener {
@@ -171,4 +171,24 @@ public class FGameListener implements Listener {
 		}
 		return list;
 	}
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        User user = User.get(event.getPlayer());
+        if (user.getGameEntry().getGame() != game) return;
+        Block lower = event.getPlayer().getLocation().getBlock();
+        Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
+        if (lower.getType() == Material.WATER || upper.getType() == Material.WATER) {
+            user.getPlayer().setHealth(0);
+            game.playerKilled(null, user);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        User user = User.get(event.getEntity());
+        if (user.getGameEntry().getGame() != game) return;
+        User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
+        game.playerKilled(killer, user);
+    }
 }

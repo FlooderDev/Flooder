@@ -35,6 +35,7 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
 
@@ -489,11 +490,12 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     }
     
     public synchronized void playerKilled(User killer, User killed) {
-        killed.getPlayer().getWorld().playEffect(killed.getPlayer().getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
+        Player killedPlayer = killed.getPlayer();
+        killedPlayer.getWorld().playEffect(killed.getPlayer().getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
         if (killer != null) {
             killer.getPlayer().playSound(killed.getPlayer().getLocation(), Sound.SUCCESSFUL_HIT, 1, 1);
         }
-        killed.getPlayer().teleport(spawnsTaken.get(killed.getPlayerName()));
+        killedPlayer.teleport(spawnsTaken.get(killed.getPlayerName()));
         Bukkit.getPluginManager().callEvent(new PlayerKilledEvent(this, killed, killer));
     }
 
