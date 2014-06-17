@@ -1,10 +1,8 @@
 global:
-  default-game: TheBoss
+  default-game: Flooder
   min-ready: 5
   min-players: 2
   game-duration: 30
   allow-command: false
-  death-spectate-time: 15
-  win-points: 1500
   countdown: 10
   allowed-commands: []

@@ -18,12 +18,12 @@ import me.kitskub.flooder.commands.admin.add.AddArenaCommand;
 import me.kitskub.flooder.commands.admin.add.AddClassSignCommand;
 import me.kitskub.flooder.commands.admin.add.AddGameCommand;
 import me.kitskub.flooder.commands.admin.add.AddHelp;
+import me.kitskub.flooder.commands.admin.add.AddSpawnPointCommand;
 import me.kitskub.flooder.commands.admin.remove.RemoveHelp;
 import me.kitskub.flooder.commands.admin.remove.RemoveSignCommand;
 import me.kitskub.flooder.commands.admin.set.SetCuboidCommand;
 import me.kitskub.flooder.commands.admin.set.SetEnabledCommand;
 import me.kitskub.flooder.commands.admin.set.SetHelp;
-import me.kitskub.flooder.commands.admin.set.SetSkillCommand;
 import me.kitskub.flooder.commands.admin.set.SetWarpCommand;
 import me.kitskub.flooder.commands.admin.set.SetZoneCommand;
 import me.kitskub.flooder.commands.user.AboutCommand;
@@ -76,9 +76,6 @@ public class Defaults {
         MIN_PLAYERS(2, "min-players"),
         GAME_DURATION(10, "game-duration"),
         ALLOW_COMMAND(false, "allow-command"),
-        DEATH_SPECTATE_TIME(15, "death-spectate-time"),
-        SKILL_POINTS_FROM_WIN(20, "skills-points-from-win"),
-        SKILL_POINTS_FROM_HIT(2, "skills-points-from-hit"),
         COUNTDOWN(10, "countdown"),
         ALLOWED_COMMANDS(new ArrayList<String>(), "allowed-commands"),
         GRACE_PERIOD(5, "grace-period"),
@@ -334,12 +331,12 @@ public class Defaults {
 	ADMIN_ADD_ARENA(new AddArenaCommand()),
 	ADMIN_ADD_CLASS_SIGN(new AddClassSignCommand()),
 	ADMIN_ADD_GAME(new AddGameCommand()),
+	ADMIN_ADD_SPAWNPOINT(new AddSpawnPointCommand()),
 	ADMIN_REMOVE_HELP(new RemoveHelp()),
 	ADMIN_REMOVE_SIGN(new RemoveSignCommand()),
 	ADMIN_SET_HELP(new SetHelp()),
     ADMIN_SET_CUBOID(new SetCuboidCommand()),
 	ADMIN_SET_ENABLED(new SetEnabledCommand()),
-	ADMIN_SET_SKILL(new SetSkillCommand()),
 	ADMIN_SET_WARP(new SetWarpCommand()),
     ADMIN_SET_ZONE(new SetZoneCommand()),
 	ADMIN_ADDARENA(new AddarenaCommand()),

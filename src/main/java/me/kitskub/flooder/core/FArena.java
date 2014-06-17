@@ -38,8 +38,8 @@ public class FArena extends AbstractArena<Flooder, FGame> {
     public boolean doLoad() {
 		spawnpoints.clear();
         if (coords.contains("spawn-points")) {
-			ConfigurationSection spawnPointsSection = coords.getConfigurationSection("spawn-points");
-			for (String key : spawnPointsSection.getKeys(false)) {
+			ConfigSection spawnPointsSection = coords.getConfigSection("spawn-points");
+			for (String key : spawnPointsSection.getKeys()) {
 				String str = spawnPointsSection.getString(key);
 				try {
 					spawnpoints.add(GeneralUtils.parseToLoc(str));
@@ -122,7 +122,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 
     @Override
     public final boolean verifyData() {
-        return mainCuboid != null && lobbyCuboid != null && lobbyWarp != null && spawnpoints.size() > 2 && takeZone != null;
+        return mainCuboid != null && lobbyCuboid != null && lobbyWarp != null && spawnpoints.size() >= 2 && takeZone != null;
     }
 
     @Override

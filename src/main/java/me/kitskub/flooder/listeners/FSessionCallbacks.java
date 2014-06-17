@@ -2,32 +2,12 @@ package me.kitskub.flooder.listeners;
 
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.core.FArena;
-import me.kitskub.gamelib.Team;
-import me.kitskub.gamelib.framework.impl.arena.BaseArena;
-import me.kitskub.gamelib.framework.impl.arena.MultiTeamedZoneArena;
 import me.kitskub.gamelib.listeners.general.ClickSession;
 import me.kitskub.gamelib.utils.Cuboid;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class FSessionCallbacks {
-
-    public static final ClickSession.Callback<FArena> spawnAdder = new ClickSession.Callback<FArena>() {
-        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
-            if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-                if (session.getObject().addSpawnPoint(event.getClickedBlock().getLocation().add(.5, 1, .5))) {
-                    session.clicked(event.getClickedBlock());
-                    ChatUtils.send(event.getPlayer(), "Spawn point %s has been added to %s.", session.getBlocks().size(), session.getObject().getName());
-                }
-                else {
-                    ChatUtils.error(event.getPlayer(), "%s already has this spawn point.", session.getObject().getName());
-                }
-                return false;
-            }
-            ChatUtils.send(event.getPlayer(), "You have added %d spawn points to the game %s.", session.getBlocks().size(), session.getObject().getName());
-            return true;
-        }
-    };
 
     public static final ClickSession.Callback<FArena> spawnRemover = new ClickSession.Callback<FArena>() {
         public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {

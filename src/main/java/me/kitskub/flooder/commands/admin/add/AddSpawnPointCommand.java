@@ -30,9 +30,8 @@ public class AddSpawnPointCommand extends PlayerCommand {
 		    ChatUtils.error(player, Lang.NOT_EXIST.getMessage().replace("<item>", args[0]));
 		    return;
 	    }
-	    
-	    SessionListener.addSession(FSessionCallbacks.spawnAdder, player, Flooder.getInstance(), arena);
-	    ChatUtils.send(player, ChatColor.GREEN, "Left-click blocks to add them as spawn points for %s. Right-click to finish.", arena.getName());
+	    arena.addSpawnPoint(player.getLocation());
+	    ChatUtils.send(player, ChatColor.GREEN, "Spawnpoint added.", arena.getName());
 	}
 
 	@Override

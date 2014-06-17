@@ -136,8 +136,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    spawnsTaken.put(player.getPlayerName(), loc);
         freshPlayers.add(player);
         joiningArena(player, active.lobbyWarp);
-        player.setClass(FClass.blank);
-        setPlayerReady(player);
+        player.setClassRaw(FClass.blank);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
 
@@ -162,7 +161,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 
     private synchronized boolean leavingGame(User player) {
         if (!freshPlayers.remove(player) & !players.remove(player)) return false;//TODO message that not in game?
-        getOwningPlugin().getStatManager().get(player).addPoints(player.getStat().get(this).getHits().size() * Defaults.Config.SKILL_POINTS_FROM_HIT.getGlobalInt());
         player.leaveGame();
         player.setClass(null);
         if (player.getPlayer().isOnline()) player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
@@ -484,10 +482,10 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     }
     
     private String checkValid() {
-        if (getValidArenas().isEmpty()) return "There are no enabled regions in game: " + name + "!"; //Must contain at least one valid arena
+        if (getValidArenas().isEmpty()) return "There are no enabled arenas in game: " + name + "!"; //Must contain at least one valid arena
         return null;
     }
-    
+
     public synchronized void playerKilled(User killer, User killed) {
         Player killedPlayer = killed.getPlayer();
         killedPlayer.getWorld().playEffect(killed.getPlayer().getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
@@ -525,7 +523,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     }
 
     public int pointsFromWin() {
-        return Defaults.Config.SKILL_POINTS_FROM_WIN.getGlobalInt();
+        return 0;
     }
 
     public int duration() {
