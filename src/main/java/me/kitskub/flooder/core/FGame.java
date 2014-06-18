@@ -135,7 +135,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    Location loc = getNextOpenSpawnPoint();
 	    spawnsTaken.put(player.getPlayerName(), loc);
         freshPlayers.add(player);
-        joiningArena(player, active.lobbyWarp);
         player.setClassRaw(FClass.blank);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
@@ -315,6 +314,9 @@ public class FGame implements Game<Flooder, FGame, FArena> {
                 return sendErrorAndReturnFalse(cs, Lang.ALREADY_COUNTING_DOWN.getMessage().replace("<game>", name));
 			}
 		}
+        for (User p : players) {
+            joiningArena(p, spawnsTaken.get(p.getPlayerName()));
+        }
         if (seconds > 0) {
             countdown = new GameCountdown(this, seconds, cs);
             state = GameState.COUNTING;
@@ -330,7 +332,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         state = GameState.RUNNING;
         for (User p : players) {
             p.setLastSpawn(System.currentTimeMillis());
-            p.getPlayer().teleport(spawnsTaken.get(p.getPlayerName()));
         }
 
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));

@@ -15,7 +15,6 @@ import me.kitskub.flooder.commands.admin.ReloadCommand;
 import me.kitskub.flooder.commands.admin.StartCommand;
 import me.kitskub.flooder.commands.admin.StopCommand;
 import me.kitskub.flooder.commands.admin.add.AddArenaCommand;
-import me.kitskub.flooder.commands.admin.add.AddClassSignCommand;
 import me.kitskub.flooder.commands.admin.add.AddGameCommand;
 import me.kitskub.flooder.commands.admin.add.AddHelp;
 import me.kitskub.flooder.commands.admin.add.AddSpawnPointCommand;
@@ -329,7 +328,6 @@ public class Defaults {
 	    
 	ADMIN_ADD_HELP(new AddHelp()),
 	ADMIN_ADD_ARENA(new AddArenaCommand()),
-	ADMIN_ADD_CLASS_SIGN(new AddClassSignCommand()),
 	ADMIN_ADD_GAME(new AddGameCommand()),
 	ADMIN_ADD_SPAWNPOINT(new AddSpawnPointCommand()),
 	ADMIN_REMOVE_HELP(new RemoveHelp()),

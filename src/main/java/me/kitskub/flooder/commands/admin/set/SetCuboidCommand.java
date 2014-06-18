@@ -32,8 +32,6 @@ public class SetCuboidCommand extends PlayerCommand {
 	    String type = args[1];
         if ("main".equalsIgnoreCase(type)) {
              SessionListener.addSession(FSessionCallbacks.mainCuboidAdder, player, arena.getOwningPlugin(), arena);
-        } else if ("lobby".equalsIgnoreCase(type)) {
-            SessionListener.addSession(FSessionCallbacks.lobbyCuboidAdder, player, arena.getOwningPlugin(), arena);
         } else {
             ChatUtils.error(player, "Invalid type!");
             return;
@@ -48,7 +46,7 @@ public class SetCuboidCommand extends PlayerCommand {
 
 	@Override
 	public String getLocalUsage() {
-		return "cuboid <arena name> [main|lobby]";
+		return "cuboid <arena name> <main>";
 	}
 	
 }

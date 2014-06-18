@@ -52,25 +52,6 @@ public class FGameListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler()
-	public void onPlayerInteract(PlayerInteractEvent event) {
-        User user = User.get(event.getPlayer());
-        if (user.getGameEntry().getGame() != game) return;
-        boolean cancel = false;
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK && game.getState().isPreGame()) {
-            Map<Location, me.kitskub.gamelib.framework.Class> signs = game.getActiveArena().signs;
-            if (signs.containsKey(event.getClickedBlock().getLocation())) {
-                me.kitskub.gamelib.framework.Class clickedClass = signs.get(event.getClickedBlock().getLocation());
-                user.setClass(clickedClass);
-                cancel = true;
-            }
-        }
-        if (cancel) {
-            event.setUseItemInHand(Event.Result.DENY);
-            event.getPlayer().updateInventory();
-        }
-    }
-
     @EventHandler(priority= EventPriority.HIGHEST, ignoreCancelled = true)
 	public void entityTargetEntityHighest(EntityTargetLivingEntityEvent event) {
 		if (!(event.getTarget() instanceof Player)) return;
@@ -181,6 +162,13 @@ public class FGameListener implements Listener {
         if (lower.getType() == Material.WATER || upper.getType() == Material.WATER) {
             user.getPlayer().setHealth(0);
             game.playerKilled(null, user);
+        }
+        if (game.getState() == Game.GameState.COUNTING && (
+                event.getFrom().getBlockX() != event.getTo().getBlockX() ||
+                event.getFrom().getBlockY() != event.getTo().getBlockY() ||
+                event.getFrom().getBlockZ() != event.getTo().getBlockZ()
+                )) {
+            event.setCancelled(true);
         }
     }
 

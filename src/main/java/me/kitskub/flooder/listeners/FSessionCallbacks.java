@@ -55,27 +55,4 @@ public class FSessionCallbacks {
 			}
         }
     };
-
-    public static final ClickSession.Callback<FArena> lobbyCuboidAdder = new ClickSession.Callback<FArena>() {
-        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
-			if (session.getBlocks().size() < 1) {
-				session.clicked(event.getClickedBlock());
-				ChatUtils.send(event.getPlayer(), "First corner set.");
-                return false;
-			} else {
-                FArena region = session.getObject();
-                region.lobbyCuboid = new Cuboid(session.getBlocks().get(0).getLocation(), event.getClickedBlock().getLocation());
-				ChatUtils.send(event.getPlayer(), "Second corner and cuboid set.");
-                return true;
-			}
-        }
-    };
-
-    public static final ClickSession.Callback<FArena> classSignAdder = new ClickSession.Callback<FArena>() {
-        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
-            session.getObject().signs.put(event.getClickedBlock().getLocation(), (me.kitskub.gamelib.framework.Class) session.getData().get("class"));
-            ChatUtils.send(event.getPlayer(), "Class sign set.");
-            return true;
-        }
-    };
 }

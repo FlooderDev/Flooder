@@ -11,7 +11,6 @@ import me.kitskub.gamelib.WorldNotFoundException;
 import me.kitskub.gamelib.framework.Zone;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.impl.arena.AbstractArena;
-import me.kitskub.gamelib.framework.impl.arena.BaseArena;
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.Cuboid;
 import me.kitskub.gamelib.utils.GeneralUtils;
@@ -24,10 +23,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 	public final List<Location> spawnpoints;
     public Zone takeZone;
     public Cuboid mainCuboid;
-    public Cuboid lobbyCuboid;
-    public Location lobbyWarp;
     public Location specWarp;
-    public final Map<Location, me.kitskub.gamelib.framework.Class> signs = new HashMap<Location, me.kitskub.gamelib.framework.Class>();
 
     public FArena(String name, ConfigSection coords) {
         super(Flooder.getInstance(), name, coords);
@@ -55,23 +51,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
             takeZone = new FZone(takeCuboid, this);
         }
         mainCuboid = Cuboid.parseFromString(coords.getString("main-cuboid", ""));
-        lobbyCuboid = Cuboid.parseFromString(coords.getString("lobby-cuboid", ""));
-        lobbyWarp = GeneralUtils.parseToLoc(coords.getString("lobby-warp", ""));
         specWarp = GeneralUtils.parseToLoc(coords.getString("spec-warp", ""));
-        ConfigSection lobbySigns = coords.getConfigSection("lobby-signs");
-        for (String key : lobbySigns.getKeys()) {
-            try {
-                Location loc = GeneralUtils.parseToLoc(key);
-                me.kitskub.gamelib.framework.Class c = getOwningPlugin().getClassManager().get(lobbySigns.getString(key));
-                if (c == null) {
-                    Logging.warning("Cannot find class: " + lobbySigns.getString(key));
-                    continue;
-                }
-                signs.put(loc, c);
-            } catch (WorldNotFoundException ex) {
-                Logging.warning(ex.getMessage());
-            }
-        }
         return super.doLoad();
     }
 
@@ -89,15 +69,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
             coords.set("take-zone", takeZone.getCuboid().parseToString());
         }
         if (mainCuboid != null) coords.set("main-cuboid", mainCuboid.toString());
-        if (lobbyCuboid != null) coords.set("lobby-cuboid", lobbyCuboid.toString());
-        if (lobbyWarp != null) coords.set("lobby-warp", GeneralUtils.parseToString(lobbyWarp));
         if (specWarp != null) coords.set("spec-warp", GeneralUtils.parseToString(specWarp));
-        Map<String, String> signs = new HashMap<String, String>();
-        for (Map.Entry<Location, me.kitskub.gamelib.framework.Class> e : this.signs.entrySet()) {
-            signs.put(GeneralUtils.parseToString(e.getKey()), e.getValue().getName());
-        }
-        ConfigSection lobbySigns = coords.getConfigSection("lobby-signs");
-        for (String s : signs.keySet()) lobbySigns.set(s, signs.get(s));
         return super.doSave();
     }
 
@@ -122,7 +94,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 
     @Override
     public final boolean verifyData() {
-        return mainCuboid != null && lobbyCuboid != null && lobbyWarp != null && spawnpoints.size() >= 2 && takeZone != null;
+        return mainCuboid != null && spawnpoints.size() >= 2 && takeZone != null;
     }
 
     @Override
@@ -136,17 +108,9 @@ public class FArena extends AbstractArena<Flooder, FGame> {
             ChatUtils.error(s, "The take zone is not set!");
             incomplete = true;
         }
-        if (lobbyWarp == null) {
-            incomplete = true;
-            ChatUtils.send(s, "Missing warp: lobby");
-        }
         if (mainCuboid == null) {
             incomplete = true;
             ChatUtils.send(s, "Cuboid not set: arena");
-        }
-        if (lobbyCuboid == null) {
-            incomplete = true;
-            ChatUtils.send(s, "Cuboid not set: lobby");
         }
         return !incomplete && super.doCheckData(s);
     }
