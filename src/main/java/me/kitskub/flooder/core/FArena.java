@@ -1,10 +1,13 @@
 package me.kitskub.flooder.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.Logging;
 import me.kitskub.gamelib.WorldNotFoundException;
@@ -52,6 +55,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         }
         mainCuboid = Cuboid.parseFromString(coords.getString("main-cuboid", ""));
         specWarp = GeneralUtils.parseToLoc(coords.getString("spec-warp", ""));
+        specWarp = GeneralUtils.parseToLoc(coords.getString("finished-warp", ""));
         return super.doLoad();
     }
 
@@ -93,26 +97,21 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 	}
 
     @Override
-    public final boolean verifyData() {
-        return mainCuboid != null && spawnpoints.size() >= 2 && takeZone != null;
-    }
-
-    @Override
-    public boolean doCheckData(CommandSender s) {
-        boolean incomplete = false;
+    public Collection<String> verifyData() {
+        Set<String> errors = new HashSet<String>(super.verifyData());
         if (spawnpoints.size() < 2) {
-            ChatUtils.error(s, "There are less than two spawnpoints!");
-            incomplete = true;
+            errors.add("There are less than two spawnpoints!");
         }
         if (takeZone == null) {
-            ChatUtils.error(s, "The take zone is not set!");
-            incomplete = true;
+            errors.add("The take zone is not set!");
         }
         if (mainCuboid == null) {
-            incomplete = true;
-            ChatUtils.send(s, "Cuboid not set: arena");
+            errors.add("Cuboid not set: arena");
         }
-        return !incomplete && super.doCheckData(s);
+        if (specWarp == null) {
+            errors.add("No spectator warp.");
+        }
+        return errors;
     }
 
     public void setZone(Cuboid c) {

@@ -28,6 +28,7 @@ import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.games.DataSave;
 import me.kitskub.gamelib.stats.PlayerStat;
 import me.kitskub.gamelib.utils.ChatUtils;
+import me.kitskub.gamelib.utils.GeneralUtils;
 import me.kitskub.gamelib.utils.config.ConfigSection;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
@@ -42,6 +43,7 @@ import org.bukkit.event.HandlerList;
 public class FGame implements Game<Flooder, FGame, FArena> {
     private final String name;
     private final List<FArena> arenas;
+    public Location finishedWarp;
 
     private FArena active;
     private GameState state;
@@ -99,7 +101,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     
     public void addArena(FArena a) {
         arenas.add(a);
-        a.addGame(this);
         validate();
     }
 
@@ -135,6 +136,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    Location loc = getNextOpenSpawnPoint();
 	    spawnsTaken.put(player.getPlayerName(), loc);
         freshPlayers.add(player);
+        DataSave.saveDataWithInvClear(player);
         player.setClassRaw(FClass.blank);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
@@ -174,7 +176,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         }
         player.setGame(this, User.GameEntry.Type.SPECTATING);
         spectating.add(player);
-        if (!player.isBackSet()) player.setBackLocation();//TODO shouldn't use this method when leaving game. Split up.
         joiningArena(player, active.specWarp);
     }
 
@@ -187,13 +188,11 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     private void leavingArena(User player) {
         player.unsubscribe(this);
         DataSave.loadData(player);
-        player.goBack();
+        player.getPlayer().teleport(finishedWarp);
     }
 
     private void joiningArena(User player, Location toTeleport) {
-        if (!player.isBackSet()) player.setBackLocation();//TODO shouldn't use this method when leaving game. Split up.
         player.getPlayer().teleport(toTeleport);
-        DataSave.saveDataWithInvClear(player);
         player.subscribe(this);
     }
 
@@ -398,6 +397,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
             arenaNames.add(a.getName());
         }
 		section.set("arenas", arenaNames);
+        if (finishedWarp != null) section.set("finished-warp", GeneralUtils.parseToString(finishedWarp));
         return true;
     }
 
@@ -411,7 +411,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
                 continue;
             }
             arenas.add(arena);
-            arena.addGame(this);
         }
         setEnabled(section.getBoolean("enabled", true));
         return !bad;
@@ -484,6 +483,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     
     private String checkValid() {
         if (getValidArenas().isEmpty()) return "There are no enabled arenas in game: " + name + "!"; //Must contain at least one valid arena
+        if (finishedWarp == null) return "The finished warp is not set!";
         return null;
     }
 
