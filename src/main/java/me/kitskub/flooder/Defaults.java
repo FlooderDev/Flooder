@@ -77,8 +77,7 @@ public class Defaults {
         ALLOW_COMMAND(false, "allow-command"),
         COUNTDOWN(10, "countdown"),
         ALLOWED_COMMANDS(new ArrayList<String>(), "allowed-commands"),
-        GRACE_PERIOD(5, "grace-period"),
-        MONGODB_SERVER("127.0.0.1", "mongodb.server");
+        GRACE_PERIOD(5, "grace-period");
 	
 	
 	private Object value;

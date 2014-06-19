@@ -83,7 +83,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 
 	public static void reload() {
 		Files.INSTANCE.loadAll();
-		statManager.setServer(Defaults.Config.MONGODB_SERVER.getGlobalString());
 		statManager.loadFrom(Files.USERS.getConfig());
 		gRManager.loadFrom(Files.GAME_REWARDS.getConfig());
 		classManager.loadFrom(Files.CLASSES.getConfig());
