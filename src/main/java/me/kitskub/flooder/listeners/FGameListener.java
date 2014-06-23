@@ -8,6 +8,7 @@ import java.util.Random;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.ItemConfig;
+import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
@@ -156,7 +157,7 @@ public class FGameListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         User user = User.get(event.getPlayer());
-        if (user.getGameEntry().getGame() != game) return;
+        if (user.getGameEntry().getGame() != game || user.getGameEntry().getType() != User.GameEntry.Type.PLAYING) return;
         Block lower = event.getPlayer().getLocation().getBlock();
         Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
         if (lower.getType() == Material.WATER || upper.getType() == Material.WATER) {
@@ -169,6 +170,12 @@ public class FGameListener implements Listener {
                 event.getFrom().getBlockZ() != event.getTo().getBlockZ()
                 )) {
             event.setCancelled(true);
+        }
+        FArena a = game.getActiveArena();
+        if (a != null) {
+            if (a.takeZone.getCuboid().contains(user.getPlayer().getLocation())) {
+                a.takeZone.beginTaking(user);
+            }
         }
     }
 

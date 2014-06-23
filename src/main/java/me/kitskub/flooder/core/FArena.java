@@ -2,11 +2,9 @@ package me.kitskub.flooder.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.Logging;
@@ -14,12 +12,10 @@ import me.kitskub.gamelib.WorldNotFoundException;
 import me.kitskub.gamelib.framework.Zone;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.impl.arena.AbstractArena;
-import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.Cuboid;
 import me.kitskub.gamelib.utils.GeneralUtils;
 import me.kitskub.gamelib.utils.config.ConfigSection;
 import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class FArena extends AbstractArena<Flooder, FGame> {
@@ -55,7 +51,6 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         }
         mainCuboid = Cuboid.parseFromString(coords.getString("main-cuboid", ""));
         specWarp = GeneralUtils.parseToLoc(coords.getString("spec-warp", ""));
-        specWarp = GeneralUtils.parseToLoc(coords.getString("finished-warp", ""));
         return super.doLoad();
     }
 

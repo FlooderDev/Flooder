@@ -118,7 +118,6 @@ public class FZone implements Zone {
         }
 
         public void run() {
-            boolean cancel = true;
             if (!cuboid.contains(taking.getPlayer().getLocation())) {
                 cancelTakeTask();
                 return;
@@ -137,9 +136,10 @@ public class FZone implements Zone {
                 takeTask = null;
                 tempChangedWool.clear();
                 if (!woolToChange.isEmpty()) Logging.severe("Not all the wool was changed in a zone!");
-                ChatUtils.broadcast(arena.getActiveGame(), taking.getTeam() + " has taken the mountain!");
+                ChatUtils.broadcast(arena.getActiveGame(), taking.getPlayerName() + " has taken the mountain!");
                 taking.getPlayer().playSound(taking.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
                 Bukkit.getPluginManager().callEvent(new ZoneTakenEvent(arena.getActiveGame(), taking, ZoneTakenEvent.TakenType.USER));
+                arena.getActiveGame().zoneTaken(taking);
                 taking = null;
             }
         }

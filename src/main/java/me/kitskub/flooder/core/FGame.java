@@ -403,6 +403,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 
     public boolean loadFrom(ConfigSection section) {
         boolean bad = false;
+        finishedWarp = GeneralUtils.parseToLoc(section.getString("finished-warp"));
         arenas.clear();
         for (String s : section.getStringList("arenas")) {
             FArena arena = Flooder.gameMaster().getArena(s);
@@ -540,7 +541,11 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     }
 
     public boolean isFull() {
-        return spawnsTaken.size() >= active.spawnpoints.size();
+        return active != null && spawnsTaken.size() >= active.spawnpoints.size();
+    }
+
+    public void zoneTaken(User taking) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
