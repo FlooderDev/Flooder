@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import me.kitskub.gamelib.Perm;
-import me.kitskub.gamelib.commands.Command;
 import me.kitskub.flooder.commands.admin.AddarenaCommand;
 import me.kitskub.flooder.commands.admin.CheckCommand;
 import me.kitskub.flooder.commands.admin.ForceLeaveCommand;
 import me.kitskub.flooder.commands.admin.KickCommand;
 import me.kitskub.flooder.commands.admin.ReloadCommand;
+import me.kitskub.flooder.commands.admin.SaveCommand;
 import me.kitskub.flooder.commands.admin.StartCommand;
 import me.kitskub.flooder.commands.admin.StopCommand;
 import me.kitskub.flooder.commands.admin.add.AddArenaCommand;
@@ -20,7 +18,6 @@ import me.kitskub.flooder.commands.admin.add.AddHelp;
 import me.kitskub.flooder.commands.admin.add.AddSpawnPointCommand;
 import me.kitskub.flooder.commands.admin.remove.RemoveHelp;
 import me.kitskub.flooder.commands.admin.remove.RemoveSignCommand;
-import me.kitskub.flooder.commands.admin.set.SetCuboidCommand;
 import me.kitskub.flooder.commands.admin.set.SetEnabledCommand;
 import me.kitskub.flooder.commands.admin.set.SetHelp;
 import me.kitskub.flooder.commands.admin.set.SetWarpCommand;
@@ -33,6 +30,8 @@ import me.kitskub.flooder.commands.user.QuitCommand;
 import me.kitskub.flooder.commands.user.SpectateCommand;
 import me.kitskub.flooder.commands.user.StatCommand;
 import me.kitskub.flooder.commands.user.SubscribeCommand;
+import me.kitskub.gamelib.Perm;
+import me.kitskub.gamelib.commands.Command;
 import org.bukkit.permissions.Permission;
 
 public class Defaults {
@@ -270,6 +269,7 @@ public class Defaults {
 		ADMIN_PAUSE(new Permission("flooder.game.pause"), ADMIN),
 		ADMIN_RESUME(new Permission("flooder.game.resume"), ADMIN),
 		ADMIN_RELOAD(new Permission("flooder.admin.reload"), ADMIN),
+		ADMIN_SAVE(new Permission("flooder.admin.save"), ADMIN),
 		ADMIN_KICK(new Permission("flooder.admin.kick"), ADMIN),
 		ADMIN_KILL(new Permission("flooder.admin.kill"), ADMIN),
 		ADMIN_HELP(new Permission("flooder.admin.help"), ADMIN, "allows a player to view admin commands"),
@@ -332,7 +332,6 @@ public class Defaults {
 	ADMIN_REMOVE_HELP(new RemoveHelp()),
 	ADMIN_REMOVE_SIGN(new RemoveSignCommand()),
 	ADMIN_SET_HELP(new SetHelp()),
-    ADMIN_SET_CUBOID(new SetCuboidCommand()),
 	ADMIN_SET_ENABLED(new SetEnabledCommand()),
 	ADMIN_SET_WARP(new SetWarpCommand()),
     ADMIN_SET_ZONE(new SetZoneCommand()),
@@ -341,6 +340,7 @@ public class Defaults {
 	ADMIN_START(new StartCommand()),
 	ADMIN_STOP(new StopCommand()),
 	ADMIN_RELOAD(new ReloadCommand()),
+	ADMIN_SAVE(new SaveCommand()),
 	ADMIN_KICK(new KickCommand()),
 	ADMIN_FORCE_LEAVE(new ForceLeaveCommand()),
 	USER_ABOUT(new AboutCommand()),

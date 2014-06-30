@@ -40,19 +40,4 @@ public class FSessionCallbacks {
 			}
         }
     };
-
-    public static final ClickSession.Callback<FArena> mainCuboidAdder = new ClickSession.Callback<FArena>() {
-        public boolean callback(PlayerInteractEvent event, ClickSession<FArena> session) {
-			if (session.getBlocks().size() < 1) {
-				session.clicked(event.getClickedBlock());
-				ChatUtils.send(event.getPlayer(), "First corner set.");
-                return false;
-			} else {
-                FArena region = session.getObject();
-                region.mainCuboid = new Cuboid(session.getBlocks().get(0).getLocation(), event.getClickedBlock().getLocation());
-				ChatUtils.send(event.getPlayer(), "Second corner and cuboid set.");
-                return true;
-			}
-        }
-    };
 }

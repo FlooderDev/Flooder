@@ -21,7 +21,6 @@ import org.bukkit.configuration.ConfigurationSection;
 public class FArena extends AbstractArena<Flooder, FGame> {
 	public final List<Location> spawnpoints;
     public Zone takeZone;
-    public Cuboid mainCuboid;
     public Location specWarp;
 
     public FArena(String name, ConfigSection coords) {
@@ -49,7 +48,6 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         if (takeCuboid != null) {
             takeZone = new FZone(takeCuboid, this);
         }
-        mainCuboid = Cuboid.parseFromString(coords.getString("main-cuboid", ""));
         specWarp = GeneralUtils.parseToLoc(coords.getString("spec-warp", ""));
         return super.doLoad();
     }
@@ -67,7 +65,6 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         if (takeZone != null) {
             coords.set("take-zone", takeZone.getCuboid().parseToString());
         }
-        if (mainCuboid != null) coords.set("main-cuboid", mainCuboid.toString());
         if (specWarp != null) coords.set("spec-warp", GeneralUtils.parseToString(specWarp));
         return super.doSave();
     }
@@ -99,9 +96,6 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         }
         if (takeZone == null) {
             errors.add("The take zone is not set!");
-        }
-        if (mainCuboid == null) {
-            errors.add("Cuboid not set: arena");
         }
         if (specWarp == null) {
             errors.add("No spectator warp.");

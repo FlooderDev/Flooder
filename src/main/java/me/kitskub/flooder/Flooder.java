@@ -15,10 +15,11 @@ import me.kitskub.gamelib.framework.Class;
 import me.kitskub.gamelib.framework.GameMaster;
 import me.kitskub.gamelib.framework.Manager;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
-import me.kitskub.gamelib.framework.impl.StatManager;
+import me.kitskub.gamelib.framework.impl.FlatFileStatManager;
 import me.kitskub.gamelib.listeners.general.InfoSignListener;
 import me.kitskub.gamelib.listeners.general.PlayerAutoJoinListener;
 import me.kitskub.gamelib.register.GLPermission;
+import me.kitskub.gamelib.stats.GlobalPlayerStat;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -33,7 +34,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 	private static GameMaster<Flooder, FGame, FArena> gameMaster;
 	private static Manager<FClass> classManager;
 	private static GameRewardManager gRManager;
-	private static StatManager statManager;
+	private static FlatFileStatManager<GlobalPlayerStat> statManager;
     private static PlayerAutoJoinListener pajListener;
     private final CommandHandler fCH = new CommandHandler(CMD_USER, this);
     private final CommandHandler faCH = new CommandHandler(CMD_ADMIN, this);
@@ -45,11 +46,12 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 
 		ConfigurationSerialization.registerClass(FClass.class, "TBClass");
         ConfigurationSerialization.registerClass(Item.class, "Item");
-		//None of these should access files on init
+        Files.INSTANCE.loadAll();
 		gameMaster = new GameMasterImpl<Flooder, FGame, FArena>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
 		classManager = new Manager<FClass>(FClass.class);
 		gRManager = new GameRewardManager();
-		statManager = new StatManager();
+		statManager = new FlatFileStatManager<>(GlobalPlayerStat.CREATOR, Files.USERS.getConfig());
+        loadManagers();
 
 		registerCommands();
 		reload();
@@ -71,22 +73,30 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 				game.cancelGame();
 			}
 		}
-		gameMaster.save();
-		classManager.saveTo(Files.CLASSES.getConfig());
-		gRManager.saveTo(Files.GAME_REWARDS.getConfig());
-		statManager.saveTo(Files.USERS.getConfig());
 
-		Logging.info("Games saved.");
-		Files.INSTANCE.saveAll();
+        saveAll();
 		Logging.info("Disabled.");
 	}
 
-	public static void reload() {
-		Files.INSTANCE.loadAll();
-		statManager.loadFrom(Files.USERS.getConfig());
+    public static void saveAll() {
+		gameMaster.save();
+		classManager.saveTo(Files.CLASSES.getConfig());
+		gRManager.saveTo(Files.GAME_REWARDS.getConfig());
+		statManager.save();
+
+		Files.INSTANCE.saveAll();
+    }
+
+    public static void loadManagers() {
+		statManager.load();
 		gRManager.loadFrom(Files.GAME_REWARDS.getConfig());
 		classManager.loadFrom(Files.CLASSES.getConfig());
 		gameMaster.load();
+        
+    }
+	public static void reload() {
+		Files.INSTANCE.loadAll();
+        loadManagers();
 	}
 
 	private static void registerCommands() {
@@ -133,7 +143,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 		return classManager;
 	}
 
-	public StatManager getStatManager() {
+	public FlatFileStatManager getStatManager() {
 		return statManager;
 	}
 

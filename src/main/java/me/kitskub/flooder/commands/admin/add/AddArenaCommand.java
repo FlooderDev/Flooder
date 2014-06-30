@@ -26,7 +26,7 @@ public class AddArenaCommand extends PlayerCommand {
 		    return;
 	    }
         Flooder.gameMaster().createArena(args[0]);
-        ChatUtils.send(player, "Arena created! Must now set the main arena cuboid, lobby cuboid, lobby signs, and spawnpoints!");
+        ChatUtils.send(player, "Arena created! Must now set the take zone and spawnpoints!");
 	}
 
 	@Override

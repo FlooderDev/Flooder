@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import me.kitskub.flooder.utils.BossBarHandler;
 
 import me.kitskub.gamelib.Logging;
 import me.kitskub.gamelib.api.event.ZoneTakenEvent;
-import me.kitskub.gamelib.framework.Arena;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.framework.Zone;
 import me.kitskub.gamelib.utils.ChatUtils;
@@ -22,7 +22,6 @@ import org.bukkit.Sound;
 import org.bukkit.material.Wool;
 import org.bukkit.scheduler.BukkitTask;
 
-// TODO: rename to TeamZone
 public class FZone implements Zone {
     private final Cuboid cuboid;
     private final FArena arena;
@@ -41,7 +40,7 @@ public class FZone implements Zone {
         return cuboid;
     }
 
-    public Arena<?, ?> getArena() {
+    public FArena getArena() {
         return arena;
     }
 
@@ -104,6 +103,7 @@ public class FZone implements Zone {
         }
         tempChangedWool.clear();
         woolToChange.clear();
+        BossBarHandler.get().updatePercent(arena.getActiveGame(), 100f);
     }
 
     private class TakeRunnable implements Runnable {
@@ -131,6 +131,7 @@ public class FZone implements Zone {
                 change.getBlock().setTypeIdAndData(Material.WOOL.getId(), newData, false);
                 tempChangedWool.add(change);
             }
+            BossBarHandler.get().updatePercent(arena.getActiveGame(), ((float) taken / needed));
             if (taken >= needed) {
                 takeTask.cancel();
                 takeTask = null;
@@ -139,7 +140,7 @@ public class FZone implements Zone {
                 ChatUtils.broadcast(arena.getActiveGame(), taking.getPlayerName() + " has taken the mountain!");
                 taking.getPlayer().playSound(taking.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
                 Bukkit.getPluginManager().callEvent(new ZoneTakenEvent(arena.getActiveGame(), taking, ZoneTakenEvent.TakenType.USER));
-                arena.getActiveGame().zoneTaken(taking);
+                arena.getActiveGame().win(taking);
                 taking = null;
             }
         }

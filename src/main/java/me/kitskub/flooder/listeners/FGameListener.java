@@ -18,7 +18,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -158,18 +157,23 @@ public class FGameListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         User user = User.get(event.getPlayer());
         if (user.getGameEntry().getGame() != game || user.getGameEntry().getType() != User.GameEntry.Type.PLAYING) return;
-        Block lower = event.getPlayer().getLocation().getBlock();
-        Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
-        if (lower.getType() == Material.WATER || upper.getType() == Material.WATER) {
-            user.getPlayer().setHealth(0);
-            game.playerKilled(null, user);
+        if (game.getState() == Game.GameState.RUNNING) {
+            Block lower = event.getPlayer().getLocation().getBlock();
+            Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
+            if (lower.getType() == Material.WATER || lower.getType() == Material.STATIONARY_WATER || upper.getType() == Material.WATER || upper.getType() == Material.STATIONARY_WATER) {
+                user.getPlayer().setHealth(0);
+            }
         }
         if (game.getState() == Game.GameState.COUNTING && (
                 event.getFrom().getBlockX() != event.getTo().getBlockX() ||
                 event.getFrom().getBlockY() != event.getTo().getBlockY() ||
                 event.getFrom().getBlockZ() != event.getTo().getBlockZ()
                 )) {
-            event.setCancelled(true);
+            Location frozenLoc = game.getSpawnsTaken(user);
+            Location loc = frozenLoc.clone();
+			loc.setPitch(event.getPlayer().getLocation().getPitch());
+			loc.setYaw(event.getPlayer().getLocation().getYaw());
+            event.getPlayer().teleport(loc);
         }
         FArena a = game.getActiveArena();
         if (a != null) {

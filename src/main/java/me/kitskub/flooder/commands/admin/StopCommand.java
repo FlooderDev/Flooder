@@ -27,7 +27,10 @@ public class StopCommand extends Command {
 		    ChatUtils.error(cs, "%s does not exist.", name);
 		    return;
 		}
-		game.cancelGame(cs);
+		String error = game.cancelGame();
+        if (error != null) {
+            ChatUtils.error(cs, error);
+        }
 	}
 
 	@Override

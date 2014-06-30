@@ -12,6 +12,7 @@ import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.listeners.FGameListener;
+import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.GameCountdown;
 import me.kitskub.gamelib.GameLib;
 import me.kitskub.gamelib.GameRewardManager;
@@ -21,8 +22,8 @@ import me.kitskub.gamelib.api.event.GameStartedEvent;
 import me.kitskub.gamelib.api.event.PlayerJoinGameEvent;
 import me.kitskub.gamelib.api.event.PlayerKilledEvent;
 import me.kitskub.gamelib.framework.Arena.ArenaState;
-import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.Game.GameState;
+import me.kitskub.gamelib.framework.TimedGame;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.games.DataSave;
@@ -38,9 +39,11 @@ import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 
-public class FGame implements Game<Flooder, FGame, FArena> {
+public class FGame implements TimedGame<Flooder, FGame, FArena> {
     private final String name;
     private final List<FArena> arenas;
     public Location finishedWarp;
@@ -49,7 +52,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     private GameState state;
     private GameCountdown countdown;
     // Players
-    private final Set<User> freshPlayers;
     private final Set<User> players;
     private final Set<User> spectating;
 	private final Map<String, Location> spawnsTaken;
@@ -65,7 +67,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         this.state = GameState.DISABLED;
         this.countdown = null;
 
-        this.freshPlayers = new HashSet<User>();
         this.players = new HashSet<User>();
         this.spectating = new HashSet<User>();
         this.spawnsTaken = new HashMap<String, Location>();
@@ -84,11 +85,11 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     }
 
     public synchronized boolean setEnabled(boolean flag, CommandSender cs) {
-	if (!flag) {
+        if (!flag) {
             if (state == GameState.RUNNING) cancelGame();
             state = GameState.DISABLED;
-	}
-	if (flag && state == GameState.DISABLED) {
+        }
+        if (flag && state == GameState.DISABLED) {
             String valid = checkValid();
             if (valid == null) state = GameState.INACTIVE;
             else {
@@ -117,7 +118,7 @@ public class FGame implements Game<Flooder, FGame, FArena> {
             return;
         }
         player.setGame(this, User.GameEntry.Type.PLAYING);
-        if (players.isEmpty() && freshPlayers.isEmpty()) {
+        if (players.isEmpty()) {
             state = GameState.WAITING;
             pickArena();
         }
@@ -129,13 +130,12 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 	    PlayerJoinGameEvent event = new PlayerJoinGameEvent(this, player);
 	    if (!canceled) Bukkit.getPluginManager().callEvent(event);
 	    if (canceled || event.isCancelled()) {
-		    if (players.isEmpty() && freshPlayers.isEmpty()) clearArena();
+		    if (players.isEmpty()) clearArena();
 		    state = GameState.INACTIVE;
 		    return;
 	    }
 	    Location loc = getNextOpenSpawnPoint();
 	    spawnsTaken.put(player.getPlayerName(), loc);
-        freshPlayers.add(player);
         DataSave.saveDataWithInvClear(player);
         player.setClassRaw(FClass.blank);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
@@ -143,28 +143,22 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 
     public synchronized void leave(User player) {
         if (!leavingGame(player)) return;
-        if (freshPlayers.contains(player)) {
-            throw new IllegalStateException(player.getPlayer().getName() + " did not get removed when he left the game! (freshPlayers)");//TODO remove
-        }
-        if (players.contains(player)) {
-            throw new IllegalStateException(player.getPlayer().getName() + " did not get removed when he left the game! (players)");//TODO remove
-        }
-        if (players.isEmpty() && freshPlayers.isEmpty()) {
+        if (players.isEmpty()) {
             cancelGame();
             return;
         }
         if (state == GameState.RUNNING) {
-            if (players.size() == 1) {
-                endGame();
-            }
+            win(players.iterator().next());
         }
     }
 
     private synchronized boolean leavingGame(User player) {
-        if (!freshPlayers.remove(player) & !players.remove(player)) return false;//TODO message that not in game?
-        player.leaveGame();
+        if (!players.remove(player)) throw new IllegalStateException("Player is not in game!");
+        player.setGame(null, User.GameEntry.Type.NONE);
         player.setClass(null);
         if (player.getPlayer().isOnline()) player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        player.getPlayer().removePotionEffect(PotionEffectType.JUMP);
+        BossBarHandler.get().remove(player);
         leavingArena(player);
         return true;
     }
@@ -207,50 +201,25 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     public Set<User> getAllPlayers() {
         HashSet<User> set = new HashSet<User>(players);
         set.addAll(spectating);
-        set.addAll(freshPlayers);
         return set;
     }
 
-    public boolean endGame() {
-        return endGame(Bukkit.getConsoleSender());
+    public String cancelGame() {
+        return stopGame();
     }
 
-    public boolean endGame(CommandSender notifier) {
-        return stopGame(notifier, true);
-    }
-
-    public boolean cancelGame() {
-        return cancelGame(Bukkit.getConsoleSender());
-    }
-
-    public boolean cancelGame(CommandSender notifier) {
-        return stopGame(notifier, false);
-    }
-
-    private synchronized boolean stopGame(CommandSender cs, boolean normal) {
-        if (cs == null) cs = Bukkit.getConsoleSender();
+    private String stopGame() {
         if (state == GameState.INACTIVE) {
-            ChatUtils.error(cs, "Cannot stop a game that is inactive!");
-            return false;
+            return "Cannot stop a game that is inactive!";
         } else if (state == GameState.DISABLED) {
-            ChatUtils.error(cs, "Cannot stop a disabled game!");
-            return false;
+            return "Cannot stop a disabled game!";
         }
         if (countdown != null) {
             countdown.cancel();
             countdown = null;
         }
         List<User> list;
-        if (state == GameState.WAITING || state == GameState.COUNTING) {
-            list = new ArrayList<User>(freshPlayers);
-            for (User p : list) {
-                leavingGame(p);
-            }
-        } else if (state == GameState.RUNNING) {
-            if (normal) winIfNecessary();
-            if (!freshPlayers.isEmpty()) {//TODO remove
-                throw new IllegalStateException("There are freshPlayers when the game was running!");
-            }
+        if (state == GameState.RUNNING) {
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this));
         }
         list = new ArrayList<User>(spectating);
@@ -263,32 +232,37 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         }
         state = GameState.INACTIVE;
         clearArena();
-        return true;
+        return null;
     }
 
-    private void winIfNecessary() {
-        // Players win
-        if (players.size() == 1) {
-            ChatUtils.broadcast(this, "Players won the game: " +  name);
-            for (User u : players) {
-                final User winner = u;
+    public void endByTime() {
+        ChatUtils.broadcast(this, "The game has ended because time ran out.");
+    }
+
+    public void win(final User winner) {
+        ChatUtils.broadcast(this, winner.getPlayerName() + " has won the game!");
+        for (User u : players) {
+            if (u == winner) {
                 Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
                     public void run() {
                         winner.getPlayer().playSound(winner.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
                         GameRewardManager.rewardWin(winner);
-                    }
+                }
                 }, 2);
                 getOwningPlugin().getStatManager().get(winner).addWin();
                 getOwningPlugin().getStatManager().get(winner).addPoints(pointsFromWin());
-                /*Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
+            } else {
+                final User loser = u;
+                Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
                     public void run() {
-                        local.getPlayer().playSound(local.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
-                        GameRewardManager.rewardLoss(local);
+                        loser.getPlayer().playSound(loser.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
+                        GameRewardManager.rewardLoss(loser);
                     }
                 }, 2);
-                getOwningPlugin().getStatManager().get(u).addLoss();*/
+                getOwningPlugin().getStatManager().get(u).addLoss();
             }
         }
+        stopGame();
     }
 
     public synchronized boolean startGame() {
@@ -305,19 +279,18 @@ public class FGame implements Game<Flooder, FGame, FArena> {
             return sendErrorAndReturnFalse(cs, String.format("There are not enough players in %s", name));
         }
 		if (countdown != null) {
-			if (seconds < countdown.getTimeLeft()) {
-				countdown.cancel();
-				countdown = null;
-			}
-			else {
+			if (seconds >= countdown.getTimeLeft()) {
                 return sendErrorAndReturnFalse(cs, Lang.ALREADY_COUNTING_DOWN.getMessage().replace("<game>", name));
-			}
-		}
-        for (User p : players) {
-            joiningArena(p, spawnsTaken.get(p.getPlayerName()));
+            }
+            countdown.cancel();
+            countdown = null;
+		} else {
+            for (User p : players) {
+                joiningArena(p, spawnsTaken.get(p.getPlayerName()));
+            }
         }
         if (seconds > 0) {
-            countdown = new GameCountdown(this, seconds, cs);
+            countdown = new GameCountdown(this, seconds, cs, GameCountdown.getDefaultStartingString());
             state = GameState.COUNTING;
             return true;
         }
@@ -326,12 +299,12 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         if (event.isCancelled()) {
             return sendErrorAndReturnFalse(cs, "Game cancelled by event");
         }
-        // Send all non-readied players home, they missed their chance
-        removeFreshPlayers();
         state = GameState.RUNNING;
         for (User p : players) {
             p.setLastSpawn(System.currentTimeMillis());
+            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 1));
         }
+        BossBarHandler.get().initForAll(this);
 
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
         return true;
@@ -340,14 +313,6 @@ public class FGame implements Game<Flooder, FGame, FArena> {
     private static boolean sendErrorAndReturnFalse(CommandSender cs, String message) {
         ChatUtils.error(cs, message);
         return false;
-    }
-
-    private void removeFreshPlayers() {
-        for (User player : new ArrayList<User>(freshPlayers)) {
-            if (!leavingGame(player)) continue;
-            spectate(player);
-        }
-        freshPlayers.clear();
     }
 
     @Override
@@ -500,11 +465,9 @@ public class FGame implements Game<Flooder, FGame, FArena> {
 
     public void setPlayerReady(User user) {
         ChatUtils.send(user.getPlayer(), "You have been set as ready!");
-        if (freshPlayers.remove(user)) {
-            players.add(user);
-            if (players.size() >= Config.MIN_READY.getGlobalInt()) {
-                startGame();
-            }
+        players.add(user);
+        if (players.size() >= Config.MIN_READY.getGlobalInt()) {
+            startGame();
         }
     }
 
@@ -544,8 +507,8 @@ public class FGame implements Game<Flooder, FGame, FArena> {
         return active != null && spawnsTaken.size() >= active.spawnpoints.size();
     }
 
-    public void zoneTaken(User taking) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Location getSpawnsTaken(User user) {
+        return spawnsTaken.get(user.getPlayerName());
     }
 
     public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
