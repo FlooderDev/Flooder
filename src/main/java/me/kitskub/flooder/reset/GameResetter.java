@@ -53,14 +53,13 @@ public class GameResetter implements Listener {
 		return true;
 	}
 
-	private synchronized void check(Location loc, BlockState state) {
+	public void add(Location loc, BlockState state) {
 		if (changedBlocks.containsKey(loc)) return; // Don't want to erase the original block
 		changedBlocks.put(loc, state);
-	}
-
-	private synchronized void check(Location loc, ItemStack[] inv) {
-		if (changedInvs.containsKey(loc)) return; // Don't want to erase the original block
-		changedInvs.put(loc, inv);
+        if (state instanceof InventoryHolder) {
+            if (changedInvs.containsKey(loc)) return; // Don't want to erase the original block
+            changedInvs.put(loc, ((InventoryHolder) state).getInventory().getContents());
+        }
 	}
 
     private boolean inGame(Player player) {
@@ -70,31 +69,28 @@ public class GameResetter implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if (inGame(event.getPlayer()) && event.getClickedBlock() != null) {
-			check(event.getClickedBlock().getLocation(), event.getClickedBlock().getState());
-            if (event.getClickedBlock().getState() instanceof InventoryHolder) {
-                check(event.getClickedBlock().getLocation(), ((InventoryHolder) event.getClickedBlock().getState()).getInventory().getContents());
-            }
+			add(event.getClickedBlock().getLocation(), event.getClickedBlock().getState());
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockPlace(BlockPlaceEvent event) {
         if (inGame(event.getPlayer())) {
-            check(event.getBlock().getLocation(), event.getBlockReplacedState());
+            add(event.getBlock().getLocation(), event.getBlockReplacedState());
         }
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockBreak(BlockBreakEvent event) {
         if (inGame(event.getPlayer())) {
-            check(event.getBlock().getLocation(), event.getBlock().getState());
+            add(event.getBlock().getLocation(), event.getBlock().getState());
         }
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onBlockFromTo(BlockFromToEvent event) {
         if (changedBlocks.containsKey(event.getBlock().getLocation())) {
-            check(event.getToBlock().getLocation(), event.getToBlock().getState());
+            add(event.getToBlock().getLocation(), event.getToBlock().getState());
         }
 	}
 }

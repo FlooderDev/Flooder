@@ -12,6 +12,7 @@ import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.listeners.FGameListener;
+import me.kitskub.flooder.listeners.WaterRunner;
 import me.kitskub.flooder.reset.GameResetter;
 import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.GameCountdown;
@@ -59,6 +60,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     //Listeners
     private final FGameListener listener;
     private final GameResetter resetter;
+    private final WaterRunner waterRunner;
     //Temp
     private final Set<Chest> chests;
 
@@ -75,6 +77,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
         this.listener = new FGameListener(this);
         this.resetter = new GameResetter(this);
+        this.waterRunner = new WaterRunner(this);
 
         this.chests = new HashSet<Chest>();
     }
@@ -220,6 +223,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         List<User> list;
         if (state == GameState.RUNNING) {
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this));
+            waterRunner.stop();
             resetter.resetChanges();
         }
         list = new ArrayList<User>(spectating);
@@ -306,7 +310,8 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 1));
         }
         BossBarHandler.get().initForAll(this);
-
+        this.waterRunner.start();
+        
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
         return true;
     }
@@ -516,6 +521,10 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     public Location getSpawnsTaken(User user) {
         return spawnsTaken.get(user.getPlayerName());
+    }
+
+    public GameResetter getResetter() {
+        return resetter;
     }
 
     public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
