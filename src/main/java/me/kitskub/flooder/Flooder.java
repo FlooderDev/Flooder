@@ -16,6 +16,7 @@ import me.kitskub.gamelib.framework.GameMaster;
 import me.kitskub.gamelib.framework.Manager;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.impl.FlatFileStatManager;
+import me.kitskub.gamelib.listeners.general.ArenaProtectionListener;
 import me.kitskub.gamelib.listeners.general.InfoSignListener;
 import me.kitskub.gamelib.listeners.general.PlayerAutoJoinListener;
 import me.kitskub.gamelib.register.GLPermission;
@@ -36,6 +37,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 	private static GameRewardManager gRManager;
 	private static FlatFileStatManager<GlobalPlayerStat> statManager;
     private static PlayerAutoJoinListener pajListener;
+    private static ArenaProtectionListener apListener;
     private final CommandHandler fCH = new CommandHandler(CMD_USER, this);
     private final CommandHandler faCH = new CommandHandler(CMD_ADMIN, this);
 
@@ -44,24 +46,24 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 		instance = this;
 		Logging.init();
 
-		ConfigurationSerialization.registerClass(FClass.class, "TBClass");
+		ConfigurationSerialization.registerClass(FClass.class, "FClass");
         ConfigurationSerialization.registerClass(Item.class, "Item");
         Files.INSTANCE.loadAll();
-		gameMaster = new GameMasterImpl<Flooder, FGame, FArena>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
-		classManager = new Manager<FClass>(FClass.class);
+		gameMaster = new GameMasterImpl<>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
+		classManager = new Manager<>(FClass.class);
 		gRManager = new GameRewardManager();
 		statManager = new FlatFileStatManager<>(GlobalPlayerStat.CREATOR, Files.USERS.getConfig());
         loadManagers();
 
 		registerCommands();
-		reload();
 		Logging.info("%s game(s) loaded.", gameMaster.getGames().size());
 		Logging.info("%s class(es) loaded: ", classManager.getAll().size());
 		for (Class c : classManager.getAll()) {
 			Logging.info("  " + c.getName());
 		}
 		Games.register(this);
-        pajListener = new PlayerAutoJoinListener(gameMaster.getGames().toArray(new FGame[0]));
+        pajListener = new PlayerAutoJoinListener(gameMaster.getGames());
+        apListener = new ArenaProtectionListener(this);
         Bukkit.getPluginManager().registerEvents(pajListener, this);
 		Logging.info("Enabled.");
 	}

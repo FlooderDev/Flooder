@@ -123,7 +123,8 @@ public class FZone implements Zone {
                 return;
             }
             taken++;
-            int shouldBeDone = (int) (((float) taken / needed) * wool.size());
+            float percent = 1 - ((float)taken / needed) ;
+            int shouldBeDone = (int) (percent * wool.size());
             int left = shouldBeDone - tempChangedWool.size();
             Random r = new Random();
             for (int i = 0; i < left; i++) {
@@ -131,7 +132,7 @@ public class FZone implements Zone {
                 change.getBlock().setTypeIdAndData(Material.WOOL.getId(), newData, false);
                 tempChangedWool.add(change);
             }
-            BossBarHandler.get().updatePercent(arena.getActiveGame(), ((float) taken / needed));
+            BossBarHandler.get().updatePercent(arena.getActiveGame(), percent);
             if (taken >= needed) {
                 takeTask.cancel();
                 takeTask = null;

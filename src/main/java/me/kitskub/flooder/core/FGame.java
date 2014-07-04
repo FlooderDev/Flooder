@@ -12,6 +12,7 @@ import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.listeners.FGameListener;
+import me.kitskub.flooder.reset.GameResetter;
 import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.GameCountdown;
 import me.kitskub.gamelib.GameLib;
@@ -57,6 +58,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 	private final Map<String, Location> spawnsTaken;
     //Listeners
     private final FGameListener listener;
+    private final GameResetter resetter;
     //Temp
     private final Set<Chest> chests;
 
@@ -72,6 +74,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         this.spawnsTaken = new HashMap<String, Location>();
 
         this.listener = new FGameListener(this);
+        this.resetter = new GameResetter(this);
 
         this.chests = new HashSet<Chest>();
     }
@@ -205,10 +208,6 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     }
 
     public String cancelGame() {
-        return stopGame();
-    }
-
-    private String stopGame() {
         if (state == GameState.INACTIVE) {
             return "Cannot stop a game that is inactive!";
         } else if (state == GameState.DISABLED) {
@@ -221,6 +220,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         List<User> list;
         if (state == GameState.RUNNING) {
             Bukkit.getPluginManager().callEvent(new GameEndEvent(this));
+            resetter.resetChanges();
         }
         list = new ArrayList<User>(spectating);
         for (User p : list) {
@@ -262,7 +262,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
                 getOwningPlugin().getStatManager().get(u).addLoss();
             }
         }
-        stopGame();
+        cancelGame();
     }
 
     public synchronized boolean startGame() {
@@ -299,6 +299,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         if (event.isCancelled()) {
             return sendErrorAndReturnFalse(cs, "Game cancelled by event");
         }
+        resetter.init();
         state = GameState.RUNNING;
         for (User p : players) {
             p.setLastSpawn(System.currentTimeMillis());
@@ -497,6 +498,12 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     public int pointPollInterval() {
         return 0;
+    }
+
+    @Override
+    public boolean allowEditing(User user) {
+        // TODO: only allow 20
+        return state == GameState.RUNNING; 
     }
 
     public boolean addChest(Chest c) {
