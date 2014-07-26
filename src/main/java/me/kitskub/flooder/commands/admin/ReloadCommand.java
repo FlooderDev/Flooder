@@ -16,7 +16,7 @@ public class ReloadCommand extends Command {
 	@Override
 	public void handle(CommandSender cs, String label, String[] args) {
 		Flooder.reload();
-		ChatUtils.send(cs, ChatUtils.getPrefix(Flooder.getInstance()) + "Reloaded %s", Flooder.getInstance().getDescription().getVersion());
+		ChatUtils.send(cs, "Reloaded %s", Flooder.getInstance().getDescription().getVersion());
 	}
 
 	@Override

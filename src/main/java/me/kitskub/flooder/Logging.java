@@ -1,60 +1,23 @@
 package me.kitskub.flooder;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import me.kitskub.gamelib.Log;
-import me.kitskub.gamelib.SingleLineFormatter;
-
-public class Logging extends Log {
-	private static final Logger logger = Logger.getLogger("Flooder");
-    protected static final Logging INSTANCE = new Logging();
-
-    private Logging() {
-        super(Flooder.getInstance());
-    }
+public class Logging {
+    private static final Logger logger = Flooder.getInstance().getLogger();
 
     public static void init() {}
 
 	public static void log(Level level, String record) {
-		logger.log(level, record);		
+		logger.log(level, record);
 	}
 
 	public static void log(Level level, String record, String... strings) {
-		logger.log(level, record, strings);		
+		logger.log(level, record, strings);
 	}
 
-	static {
-		try {
-			Flooder instance = Flooder.getInstance();
-			instance.getDataFolder().mkdirs();
-			File file = Files.LOG.getFile();
-			FileHandler handler = new FileHandler(file.getPath(), true);
-			handler.setFormatter(new SingleLineFormatter());
-			logger.addHandler(handler);
-			logger.setLevel(Level.FINEST);
-			Logger parent = Logger.getLogger("Minecraft");
-			logger.setParent(parent);
-		} catch (IOException ex) {
-		}
-
-	}
-
-    @Override
-    public Logger getLogger() {
-        return logger;
-    }
-
-	@Override
-    public String getLogPrefix() {
-        return getLogPrefix0();
-	}
-    
     private static String getLogPrefix0() {
-		return String.format("[%s] %s - ", Flooder.getInstance().getName(), Flooder.getInstance().getDescription().getVersion());
+		return String.format("[%s] ", Flooder.getInstance().getName());
     }
 
 	public static void info(String format, Object... args) {

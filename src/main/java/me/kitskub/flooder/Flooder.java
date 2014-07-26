@@ -7,7 +7,6 @@ import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FClass;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.ClassPlugin;
-import me.kitskub.gamelib.GameRewardManager;
 import me.kitskub.gamelib.Games;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.commands.CommandHandler;
@@ -34,7 +33,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 	private static Flooder instance;
 	private static GameMaster<Flooder, FGame, FArena> gameMaster;
 	private static Manager<FClass> classManager;
-	private static GameRewardManager gRManager;
 	private static FlatFileStatManager<GlobalPlayerStat> statManager;
     private static PlayerAutoJoinListener pajListener;
     private static ArenaProtectionListener apListener;
@@ -51,7 +49,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
         Files.INSTANCE.loadAll();
 		gameMaster = new GameMasterImpl<>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
 		classManager = new Manager<>(FClass.class);
-		gRManager = new GameRewardManager();
 		statManager = new FlatFileStatManager<>(GlobalPlayerStat.CREATOR, Files.USERS.getConfig());
         loadManagers();
 
@@ -83,7 +80,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
     public static void saveAll() {
 		gameMaster.save();
 		classManager.saveTo(Files.CLASSES.getConfig());
-		gRManager.saveTo(Files.GAME_REWARDS.getConfig());
 		statManager.save();
 
 		Files.INSTANCE.saveAll();
@@ -91,7 +87,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 
     public static void loadManagers() {
 		statManager.load();
-		gRManager.loadFrom(Files.GAME_REWARDS.getConfig());
 		classManager.loadFrom(Files.CLASSES.getConfig());
 		gameMaster.load();
         

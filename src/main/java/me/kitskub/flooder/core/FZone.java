@@ -1,13 +1,15 @@
 package me.kitskub.flooder.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import me.kitskub.flooder.utils.BossBarHandler;
 
 import me.kitskub.gamelib.Logging;
-import me.kitskub.gamelib.api.event.ZoneTakenEvent;
+import me.kitskub.gamelib.api.event.zone.ZoneTakenEvent;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.framework.Zone;
 import me.kitskub.gamelib.utils.ChatUtils;
@@ -28,25 +30,32 @@ public class FZone implements Zone {
     private BukkitTask takeTask;
     // Wool that might or might not be changed
     private List<Location> wool = null;
-    private final List<Location> tempChangedWool = new ArrayList<Location>();
-    private final List<Location> woolToChange = new ArrayList<Location>();
+    private final List<Location> tempChangedWool = new ArrayList<>();
+    private final List<Location> woolToChange = new ArrayList<>();
+    private final ExpiringSetSimple<User> usersIn = new ExpiringSetSimple<>(2, TimeUnit.SECONDS);
+    private User taking = null;
 
     public FZone(Cuboid cuboid, FArena arena) {
         this.cuboid = cuboid;
         this.arena = arena;
     }
 
+    @Override
     public Cuboid getCuboid() {
         return cuboid;
     }
 
+    @Override
     public FArena getArena() {
         return arena;
     }
 
-    private final ExpiringSetSimple<User> usersIn = new ExpiringSetSimple<User>(2, TimeUnit.SECONDS);
-    private User taking = null;
+    @Override
+    public Set<User> getUsersIn() {
+        return Collections.unmodifiableSet(usersIn);
+    }
 
+    @Override
     public void beginTaking(User user) {
         if (wool == null) {
             wool = new ArrayList<Location>();
@@ -76,6 +85,7 @@ public class FZone implements Zone {
         }
     }
     
+    @Override
     public void reset() {
         taking = null;
         if (takeTask != null) {
@@ -117,6 +127,7 @@ public class FZone implements Zone {
             newData = new Wool(DyeColor.GREEN).getData();
         }
 
+        @Override
         public void run() {
             if (!cuboid.contains(taking.getPlayer().getLocation())) {
                 cancelTakeTask();
@@ -140,7 +151,7 @@ public class FZone implements Zone {
                 if (!woolToChange.isEmpty()) Logging.severe("Not all the wool was changed in a zone!");
                 ChatUtils.broadcast(arena.getActiveGame(), taking.getPlayerName() + " has taken the mountain!");
                 taking.getPlayer().playSound(taking.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
-                Bukkit.getPluginManager().callEvent(new ZoneTakenEvent(arena.getActiveGame(), taking, ZoneTakenEvent.TakenType.USER));
+                Bukkit.getPluginManager().callEvent(new ZoneTakenEvent(arena.getActiveGame(), FZone.this, taking, ZoneTakenEvent.TakenType.USER));
                 arena.getActiveGame().win(taking);
                 taking = null;
             }

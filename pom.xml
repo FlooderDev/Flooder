@@ -19,7 +19,7 @@
         <repository>
             <id>bukkit-repo</id>
             <url>http://repo.bukkit.org/content/groups/public/</url>
-        </repository>	
+        </repository>
         <repository>
             <id>confuser-repo</id>
             <url>http://ci.frostcast.net/plugin/repository/everything</url>

@@ -17,7 +17,7 @@ public class RemoveHelp extends PlayerCommand {
 	@Override
 	public void handlePlayer(Player cs, String label, String[] args) {
 		for (Command c : getSubCommands()) {
-			ChatUtils.helpCommand(cs, c);
+			ChatUtils.help(cs, c.getUsageAndInfo());
 		}
 	}
 

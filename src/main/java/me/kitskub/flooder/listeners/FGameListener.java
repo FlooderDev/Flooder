@@ -10,6 +10,7 @@ import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.ItemConfig;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
+import me.kitskub.gamelib.api.event.UserClassChosenEvent;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
@@ -189,5 +190,12 @@ public class FGameListener implements Listener {
         if (user.getGameEntry().getGame() != game) return;
         User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
         game.playerKilled(killer, user);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onClassChosen(UserClassChosenEvent e) {
+        if (e.getUser().getGameEntry().getGame() == game && game.getState().isPreGame()) {
+            game.setPlayerReady(e.getUser());
+        }
     }
 }

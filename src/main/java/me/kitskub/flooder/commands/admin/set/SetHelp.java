@@ -17,7 +17,7 @@ public class SetHelp extends Command {
 	public void handle(CommandSender cs, String label, String[] args) {
         ChatUtils.send(cs, ChatUtils.getHeadLiner(Flooder.getInstance()));
 		for (Command c : getSubCommands()) {
-			ChatUtils.helpCommand(cs, c);
+			ChatUtils.help(cs, c.getUsageAndInfo());
 		}
 	}
 

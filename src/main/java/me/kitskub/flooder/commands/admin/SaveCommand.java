@@ -16,7 +16,7 @@ public class SaveCommand extends Command {
 	@Override
 	public void handle(CommandSender cs, String label, String[] args) {
 		Flooder.saveAll();
-		ChatUtils.send(cs, ChatUtils.getPrefix(Flooder.getInstance()) + "Saved all data.");
+		ChatUtils.send(cs, "Saved all data.");
 	}
 
 	@Override

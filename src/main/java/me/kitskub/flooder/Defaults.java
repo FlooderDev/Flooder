@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import me.kitskub.flooder.commands.admin.AddarenaCommand;
 import me.kitskub.flooder.commands.admin.CheckCommand;
-import me.kitskub.flooder.commands.admin.ForceLeaveCommand;
 import me.kitskub.flooder.commands.admin.KickCommand;
 import me.kitskub.flooder.commands.admin.ReloadCommand;
 import me.kitskub.flooder.commands.admin.SaveCommand;
@@ -38,9 +37,6 @@ public class Defaults {
 	
     public enum Lang {
 	
-	JOIN("<player> has joined the game <game>."),
-	REJOIN("<player> has rejoined the game <gam"),
-	LEAVE("<player> has left the game <game>."),
 	QUIT("<player> has quit the game <game>."),
 	KILL("<killer> shot <killed> in game <game>."),
 	DEATH("<player> died in <game>"),
@@ -342,7 +338,6 @@ public class Defaults {
 	ADMIN_RELOAD(new ReloadCommand()),
 	ADMIN_SAVE(new SaveCommand()),
 	ADMIN_KICK(new KickCommand()),
-	ADMIN_FORCE_LEAVE(new ForceLeaveCommand()),
 	USER_ABOUT(new AboutCommand()),
 	USER_CLASS(new ClassCommand()),
 	USER_JOIN(new JoinCommand()),

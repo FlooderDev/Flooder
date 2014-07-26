@@ -1,8 +1,10 @@
 package me.kitskub.flooder.listeners;
 
 import java.util.Random;
+import java.util.logging.Level;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FGame;
+import me.kitskub.gamelib.Logging;
 import me.kitskub.gamelib.framework.User;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,28 +48,30 @@ public class WaterRunner {
             for (User u : game.getActivePlayers()) {
                 Player p = u.getPlayer();
                 Location curr = p.getLocation();
+                if (curr.getBlock().getType() != Material.AIR) Logging.logger.log(Level.WARNING, "{0} ''s current location is not in air!", p.getName());
                 float percentage = getPercentage(curr.getY(), lowest, highest);
-                if (rand.nextFloat() <= percentage) {
-                    attempt:
-                    for (int i = 0; i < 5; i++) {
-                        curr.setYaw((float) (curr.getYaw() + (.3 * rand.nextFloat()) + .1) * (rand.nextBoolean() ? -1 : 1));
-                        curr.setPitch((float) (curr.getPitch() + (.3 * rand.nextFloat()) + .1) * (rand.nextBoolean() ? -1 : 1));
-                        BlockIterator it = new BlockIterator(curr);
-                        int distance = 0;
-                        Block last;
-                        while (it.hasNext() && distance++ < 10) {
-                            Block next = it.next();
-                            last = next;
-                            if (distance < 3) continue;
-                            if (distance >= 3) {
-                                last = next;
-                            }
-                            if (distance == 3) continue;
-                            if (next.getType() == Material.AIR) continue;
-                            game.getResetter().add(last.getLocation(), last.getState());
-                            last.setType(Material.WATER);
-                            break attempt;
+                attempt:
+                for (int i = 0; i < 5; i++) {
+                    if (rand.nextFloat() > percentage) continue;
+                    curr.setYaw((float) (curr.getYaw() + (.3 * rand.nextFloat()) + .1) * (rand.nextBoolean() ? -1 : 1));
+                    curr.setPitch((float) (curr.getPitch() + (.3 * rand.nextFloat()) + .1) * (rand.nextBoolean() ? -1 : 1));
+                    BlockIterator it = new BlockIterator(curr);
+                    int distance = 0;
+                    Block lastAir = null;
+                    while (it.hasNext() && distance++ < 10) {
+                        Block next = it.next();
+                        // If the distance is less than 2, always continue
+                        if (distance < 2) continue;
+                        // Keep searching until we encounter a block that isn't air
+                        if (next.getType() == Material.AIR) {
+                            lastAir = next;
+                            continue;
                         }
+                        // If there is no air outside of the 2 block range, try again
+                        if (lastAir == null) break;
+                        game.getResetter().add(lastAir.getLocation(), lastAir.getState());
+                        lastAir.setType(Material.WATER);
+                        break attempt;
                     }
                 }
             }
