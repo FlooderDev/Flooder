@@ -63,7 +63,7 @@ public class GameResetter implements Listener {
 	}
 
     private boolean inGame(Player player) {
-        return User.get(player).getGameEntry().getGame() == game;
+        return User.get(player).getGame() == game;
     }
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

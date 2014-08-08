@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 public class JoinCommand extends PlayerCommand {
 
 	public JoinCommand() {
-		super(Perms.USER_JOIN, Flooder.fCH(), "join");
+ 		super(Flooder.fCH(), "join", "[game name]", "join a game", Perms.USER_JOIN);
         setAliases(Arrays.asList("j"));
 	}
 
@@ -33,15 +33,5 @@ public class JoinCommand extends PlayerCommand {
 		}
 
 		game.join(User.get(player));
-	}
-
-	@Override
-	public String getInfo() {
-		return "join a game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "join [game name]";
 	}
 }

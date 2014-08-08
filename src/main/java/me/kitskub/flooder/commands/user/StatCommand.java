@@ -13,7 +13,7 @@ import org.bukkit.command.CommandSender;
 public class StatCommand extends Command {
 
 	public StatCommand() {
-		super(Perms.USER_STAT, Flooder.fCH(), "stat");
+		super(Flooder.fCH(), "stat", "[game name]", "list stats for a game", Perms.USER_STAT);
 	}
 
 	@Override
@@ -32,15 +32,4 @@ public class StatCommand extends Command {
 		ChatUtils.send(cs, ChatColor.GREEN, ChatUtils.getHeadLiner(Flooder.getInstance()));
 		game.listStats(cs);
 	}
-
-	@Override
-	public String getInfo() {
-		return "list stats for a game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "stat [game name]";
-	}
-    
 }

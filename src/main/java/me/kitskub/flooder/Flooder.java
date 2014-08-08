@@ -10,11 +10,11 @@ import me.kitskub.gamelib.ClassPlugin;
 import me.kitskub.gamelib.Games;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.commands.CommandHandler;
-import me.kitskub.gamelib.framework.Class;
+import me.kitskub.gamelib.framework.GameClass;
 import me.kitskub.gamelib.framework.GameMaster;
 import me.kitskub.gamelib.framework.Manager;
-import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.impl.FlatFileStatManager;
+import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.listeners.general.ArenaProtectionListener;
 import me.kitskub.gamelib.listeners.general.InfoSignListener;
 import me.kitskub.gamelib.listeners.general.PlayerAutoJoinListener;
@@ -55,7 +55,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 		registerCommands();
 		Logging.info("%s game(s) loaded.", gameMaster.getGames().size());
 		Logging.info("%s class(es) loaded: ", classManager.getAll().size());
-		for (Class c : classManager.getAll()) {
+		for (GameClass c : classManager.getAll()) {
 			Logging.info("  " + c.getName());
 		}
 		Games.register(this);

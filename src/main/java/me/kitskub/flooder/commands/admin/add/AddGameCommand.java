@@ -1,13 +1,13 @@
 package me.kitskub.flooder.commands.admin.add;
 
+import me.kitskub.flooder.Defaults.Commands;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.api.event.GameCreateEvent;
 import me.kitskub.gamelib.api.event.GameCreatedEvent;
 import me.kitskub.gamelib.commands.PlayerCommand;
 import me.kitskub.gamelib.utils.ChatUtils;
-import me.kitskub.flooder.Defaults.Commands;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Flooder;
-import me.kitskub.flooder.core.FGame;
 import org.bukkit.Bukkit;
 
 import org.bukkit.ChatColor;
@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 public class AddGameCommand extends PlayerCommand {
 
 	public AddGameCommand() {
-		super(Perms.ADMIN_ADD_GAME, Commands.ADMIN_ADD_HELP.getCommand(), "game");
+		super(Commands.ADMIN_ADD_HELP.getCommand(), "game", "<game name>", "add a game", Perms.ADMIN_ADD_GAME);
 	}
 
 	@Override
@@ -40,16 +40,6 @@ public class AddGameCommand extends PlayerCommand {
 	    GameCreatedEvent event = new GameCreatedEvent(game);
         Bukkit.getPluginManager().callEvent(event);
         ChatUtils.send(player, ChatColor.GREEN, "%s has been created. Now you must add an arena.", args[0]);
+        Flooder.gameMaster().saveGame(game);
 	}
-
-	@Override
-	public String getInfo() {
-		return "add a game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "game <game name>";
-	}
-	
 }

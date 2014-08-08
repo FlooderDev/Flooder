@@ -7,7 +7,6 @@ import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.commands.PlayerCommand;
-import me.kitskub.gamelib.framework.impl.arena.BaseArena.RegionPoint; 
 import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -15,7 +14,7 @@ import org.bukkit.entity.Player;
 public class SetWarpCommand extends PlayerCommand {
 
 	public SetWarpCommand() {
-		super(Perms.ADMIN_SET_WARP, Commands.ADMIN_SET_HELP.getCommand(), "warp");
+		super(Commands.ADMIN_SET_HELP.getCommand(), "warp", "<arena> <spectator|lobby>", "set a warp", Perms.ADMIN_SET_WARP);
 	}
 
 	@Override
@@ -27,11 +26,11 @@ public class SetWarpCommand extends PlayerCommand {
 	    String type = args[1];
         Location loc = player.getLocation();
         if ("spectator".equalsIgnoreCase(type)) {
-            FArena arena = Flooder.gameMaster().getArena(args[0]);
-            if (arena == null) {
-                ChatUtils.error(player, Lang.NOT_EXIST.getMessage().replace("<item>", args[0]));
-                return;
-            }
+	    FArena arena = Flooder.gameMaster().getArena(args[0]);
+	    if (arena == null) {
+		    ChatUtils.error(player, Lang.NOT_EXIST.getMessage().replace("<item>", args[0]));
+		    return;
+	    }
             arena.specWarp = loc;
         } else if ("finished".equalsIgnoreCase(type)) {
             FGame game = Flooder.gameMaster().getGame(args[0]);
@@ -46,15 +45,4 @@ public class SetWarpCommand extends PlayerCommand {
         }
         ChatUtils.send(player, "Warp set.");
 	}
-
-	@Override
-	public String getInfo() {
-		return "set a warp";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "warp <arena spectator|game finished>";
-	}
-	
 }

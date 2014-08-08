@@ -7,15 +7,13 @@ import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FArena;
-import me.kitskub.flooder.listeners.FSessionCallbacks;
-import me.kitskub.gamelib.listeners.general.SessionListener;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class AddSpawnPointCommand extends PlayerCommand {
 
 	public AddSpawnPointCommand() {
-		super(Perms.ADMIN_ADD_SPAWNPOINT, Commands.ADMIN_ADD_HELP.getCommand(), "spawnpoint");
+		super(Commands.ADMIN_ADD_HELP.getCommand(), "spawnpoint", "<arena name>", "add a spawnpoint", Perms.ADMIN_ADD_SPAWNPOINT);
 	}
 
 	@Override
@@ -33,15 +31,4 @@ public class AddSpawnPointCommand extends PlayerCommand {
 	    arena.addSpawnPoint(player.getLocation());
 	    ChatUtils.send(player, ChatColor.GREEN, "Spawnpoint added.", arena.getName());
 	}
-
-	@Override
-	public String getInfo() {
-		return "add a spawnpoint";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "spawnpoint <arena name>";
-	}
-	
 }

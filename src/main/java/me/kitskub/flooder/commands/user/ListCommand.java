@@ -1,14 +1,12 @@
 package me.kitskub.flooder.commands.user;
 
-import java.util.Collection;
 import java.util.Set;
-
-import me.kitskub.gamelib.commands.Command;
-import me.kitskub.gamelib.framework.Game;
-import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FGame;
+
+import me.kitskub.gamelib.commands.Command;
+import me.kitskub.gamelib.utils.ChatUtils;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -16,7 +14,7 @@ import org.bukkit.command.CommandSender;
 public class ListCommand extends Command {
 
 	public ListCommand() {
-		super(Perms.USER_LIST, Flooder.fCH(), "list");
+		super(Flooder.fCH(), "list", "", "list games", Perms.USER_LIST);
 	}
 
 	@Override
@@ -28,19 +26,8 @@ public class ListCommand extends Command {
 			return;
 		}
 
-		for (Game g : games) {
+		for (FGame g : games) {
 			ChatUtils.send(cs, ChatColor.GOLD, "- " + g.getInfo());
 		}
-	}
-
-	@Override
-	public String getInfo() {
-		return "list games";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "list";
-	}
-    
+	} 
 }

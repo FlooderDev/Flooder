@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 public class AddarenaCommand extends Command {
 
 	public AddarenaCommand() {
-		super(Perms.ADMIN_ADDARENA, Flooder.faCH(), "addarena");
+		super(Flooder.faCH(), "addarena", "[game] [arena]", "add arena to game", Perms.ADMIN_ADDARENA);
 	}
 
 	@Override
@@ -34,15 +34,4 @@ public class AddarenaCommand extends Command {
         game.addArena(arena);
         ChatUtils.send(cs, "Arena added to game");
 	}
-
-	@Override
-	public String getInfo() {
-		return "add arena to game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "addarena [game] [arena]";
-	}
-    
 }

@@ -1,19 +1,19 @@
 package me.kitskub.flooder.commands.admin.set;
 
+import me.kitskub.flooder.Defaults.Commands;
+import me.kitskub.flooder.Defaults.Lang;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
 import me.kitskub.gamelib.commands.Command;
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.Enableable;
-import me.kitskub.flooder.Defaults.Commands;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Defaults.Lang;
-import me.kitskub.flooder.Flooder;
 
 import org.bukkit.command.CommandSender;
 
 public class SetEnabledCommand extends Command {
 
     public SetEnabledCommand() {
-	    super(Perms.ADMIN_SET_ENABLED, Commands.ADMIN_SET_HELP.getCommand(), "enabled");
+	    super(Commands.ADMIN_SET_HELP.getCommand(), "enabled", "<game|arena> <name> [true/false]", "enable or disable a game or arena", Perms.ADMIN_SET_ENABLED);
     }
 
     @Override
@@ -50,15 +50,4 @@ public class SetEnabledCommand extends Command {
 		    ChatUtils.send(cs, "%s has been disabled and the active game was stopped if it was running.", args[1]);
 	    }
     }
-
-	@Override
-	public String getInfo() {
-		return "enable or disable a game or arena";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "enabled <game|arena> <name> [true/false]";
-	}
-    
 }

@@ -15,7 +15,7 @@ import org.bukkit.entity.Player;
 public class RemoveSpawnPointCommand extends PlayerCommand {
 
 	public RemoveSpawnPointCommand() {
-		super(Perms.ADMIN_REMOVE_SPAWNPOINT, Commands.ADMIN_REMOVE_HELP.getCommand(), "spawnpoint");
+		super(Commands.ADMIN_REMOVE_HELP.getCommand(), "spawnpoint", "<arena name>", "remove a spawnpoint", Perms.ADMIN_REMOVE_SPAWNPOINT);
 	}
 
 	@Override
@@ -34,15 +34,4 @@ public class RemoveSpawnPointCommand extends PlayerCommand {
 	    SessionListener.addSession(FSessionCallbacks.spawnRemover, player, Flooder.getInstance(), arena);
 	    ChatUtils.send(player, ChatColor.GREEN, "Hit a spawn point to remove it from %s.", arena.getName());
 	}
-
-	@Override
-	public String getInfo() {
-		return "remove a spawnpoint";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "spawnpoint <arena name>";
-	}
-	
 }

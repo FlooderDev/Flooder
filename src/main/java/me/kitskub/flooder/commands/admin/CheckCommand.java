@@ -1,19 +1,19 @@
 package me.kitskub.flooder.commands.admin;
 
 import java.util.Collection;
-import me.kitskub.gamelib.commands.Command;
-import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Defaults.Perms;
-import me.kitskub.flooder.Flooder; 
+import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FArena;
+import me.kitskub.gamelib.commands.Command;
+import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.GeneralUtils;
 import org.bukkit.command.CommandSender;
 
 public class CheckCommand extends Command {
 
 	public CheckCommand() {
-		super(Perms.ADMIN_CHECK, Flooder.faCH(), "check");
+		super(Flooder.faCH(), "check", "[arena]", "check an arena's setup", Perms.ADMIN_CHECK);
 	}
 
 	@Override
@@ -33,15 +33,4 @@ public class CheckCommand extends Command {
             ChatUtils.send(cs, "Arena is ready to be used!");
         }
 	}
-
-	@Override
-	public String getInfo() {
-		return "check an arena's setup";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "check [arena]";
-	}
-    
 }

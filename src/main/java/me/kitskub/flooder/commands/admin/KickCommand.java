@@ -2,11 +2,10 @@ package me.kitskub.flooder.commands.admin;
 
 import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
-import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.commands.Command;
+import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
-import me.kitskub.gamelib.framework.User.GameEntry.Type;
-import me.kitskub.gamelib.utils.ChatUtils;
+import me.kitskub.gamelib.utils.ChatUtils; 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,7 +13,7 @@ import org.bukkit.entity.Player;
 public class KickCommand extends Command {
 
 	public KickCommand() {
-		super(Perms.ADMIN_KICK, Flooder.faCH(), "kick");
+		super(Flooder.faCH(), "kick", "<player>", "kick a player from a game", Perms.ADMIN_KICK);
 	}
 
 	@Override
@@ -29,25 +28,14 @@ public class KickCommand extends Command {
 		    return;
 		}
         User user = User.get(player);
-		FGame game = user.getGameEntry().getGame(FGame.class);
+		Game<?, ?, ?> game = user.getGame();
 		if (game == null) {
 		    ChatUtils.error(cs, "%s is currently not in a game.", user.getPlayer().getName());
 		    return;
 		}
-        if (user.getGameEntry().getType() == Type.PLAYING) {
+        if (user.getPlayingType() == User.PlayingType.PLAYING) {
             ChatUtils.broadcast(game, "%s has been kicked from the game %s.", cs.getName(), game.getName());
         }
 		game.leave(user);
 	}
-
-	@Override
-	public String getInfo() {
-		return "kick a player from a game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "kick <player>";
-	}
-    
 }

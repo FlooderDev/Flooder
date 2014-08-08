@@ -6,55 +6,56 @@ import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.commands.Command;
+import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class StartCommand extends Command {
 
 	public StartCommand() {
-		super(Perms.ADMIN_START, Flooder.faCH(), "start");
+		super(Flooder.faCH(), "start", "[game (or game in)] [seconds]", "manually start a game", Perms.ADMIN_START);
 	}
 
 	@Override
 	public void handle(CommandSender cs, String label, String[] args) {
-		String name = args.length < 1 ? Config.DEFAULT_GAME.getGlobalString() : args[0];
-		if (name == null) {
-			ChatUtils.helpCommand(cs, this);
-			return;
-		}
-		FGame game = Flooder.gameMaster().getGame(name);
-		if (game == null) {
-			ChatUtils.error(cs, Lang.NOT_EXIST.getMessage().replace("<item>", name));
-			return;
-		}
+        FGame game = null;
+        if (cs instanceof Player && args.length < 2) {
+            game = User.get((Player) cs).getGame(FGame.class);
+        }
+        String name;
+        int timeArg = 0;
+        try {
+            Integer.parseInt(args[0]);
+        } catch (NumberFormatException | IndexOutOfBoundsException e) {
+            // Not a number and there is a value
+            name = Config.DEFAULT_GAME.getGlobalString();
+            game = Flooder.gameMaster().getGame(name);
+            timeArg = 1;
+            if (game == null) {
+                ChatUtils.error(cs, Lang.NOT_EXIST.getMessage().replace("<item>", name));
+                return;
+            }
+        }
+        if (game == null) {
+            ChatUtils.helpCommand(cs, this);
+            return;
+        }
 
 		int seconds;
 
-		if (args.length == 2) {//TODO better
+		if (args.length >= timeArg + 1) {
 			try {
-				seconds = Integer.parseInt(args[1]);
-			} catch (Exception ex) {
-				ChatUtils.error(cs, "'%s' is not an integer.", args[1]);
+				seconds = Integer.parseInt(args[timeArg]);
+			} catch (NumberFormatException ex) {
+				ChatUtils.error(cs, "'%s' is not an integer.", args[timeArg]);
 				return;
 			}
-		}
-
-		else {
+		} else {
 			seconds = Config.COUNTDOWN.getGlobalInt();
 		}
 		if (!game.startGame(cs, seconds)) {
 			ChatUtils.error(cs, "Failed to start %s.", game.getName());
 		}
 	}
-
-	@Override
-	public String getInfo() {
-		return "manually start a game";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "start [game] [seconds]";
-	}
-    
 }

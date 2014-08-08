@@ -43,13 +43,13 @@ public class FGameListener implements Listener {
 		String message = event.getMessage();
         if (game.allowCommand()) return;
         User user = User.get(player);
-        if(user.getGameEntry().getGame() != game) return;
+        if(user.getGame() != game) return;
 		if(message.startsWith("/" + Flooder.CMD_ADMIN) || message.startsWith("/" + Flooder.CMD_USER)) return;
         for (String s : Defaults.Config.ALLOWED_COMMANDS.getGlobalStringList()) {
             if(message.startsWith("/" + s)) return;
         }
-        if (user.getGameEntry().getType() == User.GameEntry.Type.PLAYING) ChatUtils.error(event.getPlayer(), "Cannot use that command while in a game!");
-        else if (user.getGameEntry().getType() == User.GameEntry.Type.SPECTATING) ChatUtils.error(event.getPlayer(), "Cannot use that command while spectating a game!");
+        if (user.getPlayingType() == User.PlayingType.PLAYING) ChatUtils.error(event.getPlayer(), "Cannot use that command while in a game!");
+        else if (user.getPlayingType() == User.PlayingType.SPECTATING) ChatUtils.error(event.getPlayer(), "Cannot use that command while spectating a game!");
         event.setCancelled(true);
     }
 
@@ -58,7 +58,7 @@ public class FGameListener implements Listener {
 		if (!(event.getTarget() instanceof Player)) return;
 		Player player = (Player) event.getTarget();
         User user = User.get(player);
-        if (user.getGameEntry().getGame() != game) return;
+        if (user.getGame() != game) return;
         event.setCancelled(true);
 	}
 
@@ -66,10 +66,10 @@ public class FGameListener implements Listener {
     public void playerChatHighest(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         User user = User.get(player);
-        Game userGame = user.getGameEntry().getGame();
+        Game userGame = user.getGame();
         for (Iterator<Player> it = event.getRecipients().iterator(); it.hasNext();) {
             Player p = it.next();
-            Game otherGame = User.get(p).getGameEntry().getGame();
+            Game otherGame = User.get(p).getGame();
             if ((userGame == game && !userGame.equals(otherGame)) || (otherGame == game && !otherGame.equals(userGame))) {
                 it.remove();
             }
@@ -83,7 +83,7 @@ public class FGameListener implements Listener {
 
         Player player = event.getPlayer();
 		User user = User.get(player);
-        if (user.getGameEntry().getGame() != game) return;
+        if (user.getGame() != game) return;
 
 		final Chest state = (Chest) event.getClickedBlock().getState();
         if (game.addChest(state)) {
@@ -157,7 +157,7 @@ public class FGameListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         User user = User.get(event.getPlayer());
-        if (user.getGameEntry().getGame() != game || user.getGameEntry().getType() != User.GameEntry.Type.PLAYING) return;
+        if (user.getGame() != game || user.getPlayingType() != User.PlayingType.PLAYING) return;
         if (game.getState() == Game.GameState.RUNNING) {
             Block lower = event.getPlayer().getLocation().getBlock();
             Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
@@ -187,14 +187,14 @@ public class FGameListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         User user = User.get(event.getEntity());
-        if (user.getGameEntry().getGame() != game) return;
+        if (user.getGame() != game) return;
         User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
         game.playerKilled(killer, user);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onClassChosen(UserClassChosenEvent e) {
-        if (e.getUser().getGameEntry().getGame() == game && game.getState().isPreGame()) {
+        if (e.getUser().getGame() == game && game.getState().isPreGame()) {
             game.setPlayerReady(e.getUser());
         }
     }

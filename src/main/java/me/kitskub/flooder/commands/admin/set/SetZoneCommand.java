@@ -14,7 +14,7 @@ import org.bukkit.entity.Player;
 public class SetZoneCommand extends PlayerCommand {
 
     public SetZoneCommand() {
-	    super(Perms.ADMIN_SET_SPAWN, Commands.ADMIN_SET_HELP.getCommand(), "zone");
+	    super(Commands.ADMIN_SET_HELP.getCommand(), "zone", "<arena name>", "set the zone", Perms.ADMIN_SET_SPAWN);
     }
 
 	@Override

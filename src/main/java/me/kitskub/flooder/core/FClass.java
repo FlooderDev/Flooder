@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.Perm.AbstractPerm;
-import me.kitskub.gamelib.framework.Class;
+import me.kitskub.gamelib.framework.GameClass;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.gamelib.GameLib;
@@ -19,7 +19,7 @@ import org.bukkit.permissions.Permission;
 
 
 @SerializableAs("TBClass")
-public class FClass implements Class {
+public class FClass implements GameClass {
     public static final FClass blank = new FClass("Blank");
     private final String name;
     private final List<ItemStack> items;

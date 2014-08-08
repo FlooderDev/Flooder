@@ -1,15 +1,13 @@
 package me.kitskub.flooder.commands.user;
 
-import me.kitskub.flooder.Defaults.Commands;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Flooder;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
+import me.kitskub.flooder.Defaults.Commands;
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.commands.Command;
 import me.kitskub.gamelib.utils.ChatUtils;
@@ -19,7 +17,7 @@ import org.bukkit.command.CommandSender;
 public class AboutCommand extends Command {
 
 	public AboutCommand() {
-		super(Perms.USER_ABOUT, Flooder.fCH(), "about");
+		super(Flooder.fCH(), "about", "", "gives basic info about Flooder", Perms.USER_ABOUT);
 	}
 
 	@Override
@@ -69,15 +67,4 @@ public class AboutCommand extends Command {
 				
 		}
 	}
-
-	@Override
-	public String getInfo() {
-		return "gives basic info about Paintball";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "about";
-	}
-
 }

@@ -22,17 +22,19 @@ import me.kitskub.gamelib.api.event.GamePreStartEvent;
 import me.kitskub.gamelib.api.event.GameStartedEvent;
 import me.kitskub.gamelib.api.event.PlayerJoinGameEvent;
 import me.kitskub.gamelib.api.event.PlayerKilledEvent;
-import me.kitskub.gamelib.api.event.PlayerLeaveGameEvent;
+import me.kitskub.gamelib.api.event.PlayerLeftGameEvent;
 import me.kitskub.gamelib.framework.Arena.ArenaState;
 import me.kitskub.gamelib.framework.Game.GameState;
 import me.kitskub.gamelib.framework.TimedGame;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
+import me.kitskub.gamelib.framework.infohandler.GameClassHandler;
 import me.kitskub.gamelib.games.DataSave;
 import me.kitskub.gamelib.stats.PlayerStat;
 import me.kitskub.gamelib.utils.ChatUtils;
 import me.kitskub.gamelib.utils.GeneralUtils;
 import me.kitskub.gamelib.utils.config.ConfigSection;
+import me.kitskub.paintball.core.infohandler.LastSpawnHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Effect;
 import org.bukkit.Location;
@@ -130,7 +132,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         if (!preJoinValidation(player)) {
             return;
         }
-        player.setGame(this, User.GameEntry.Type.PLAYING);
+        player.setGame(this, User.PlayingType.PLAYING);
         if (players.isEmpty()) {
             state = GameState.WAITING;
             pickArena();
@@ -152,7 +154,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 	    Location loc = getNextOpenSpawnPoint();
 	    spawnsTaken.put(player.getPlayerName(), loc);
         DataSave.saveDataWithInvClear(player);
-        player.setClass(FClass.blank, false);
+        player.getInfoHandler(GameClassHandler.CREATOR).setClass(FClass.blank, false);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
 
@@ -170,14 +172,14 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     private synchronized boolean leavingGame(User player) {
         if (!players.remove(player)) return false;
-        player.setGame(null, User.GameEntry.Type.NONE);
-        player.setClass(null);
+        player.getInfoHandler(GameClassHandler.CREATOR).setClass(null);
         if (player.getPlayer().isOnline()) player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         player.getPlayer().removePotionEffect(PotionEffectType.JUMP);
         BossBarHandler.get().remove(player);
         leavingArena(player);
-        spawnsTaken.remove(player.getPlayerName(), name);
-        Bukkit.getPluginManager().callEvent(new PlayerLeaveGameEvent(this, player));
+        spawnsTaken.remove(player.getPlayerName());
+        player.setGame(null, User.PlayingType.NONE);
+        Bukkit.getPluginManager().callEvent(new PlayerLeftGameEvent(this, player));
         return true;
     }
 
@@ -187,14 +189,14 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             ChatUtils.error(player.getPlayer(), "There is no one in that game!");
             return;
         }
-        player.setGame(this, User.GameEntry.Type.SPECTATING);
+        player.setGame(this, User.PlayingType.SPECTATING);
         spectating.add(player);
         joiningArena(player, active.specWarp);
     }
 
     @Override
     public void leaveSpectate(User player) {
-        player.leaveGame();
+        player.setGame(null, User.PlayingType.NONE);
         spectating.remove(player);
         leavingArena(player);
     }
@@ -339,9 +341,9 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         resetter.init();
         state = GameState.RUNNING;
         for (User p : players) {
-            p.setLastSpawn(System.currentTimeMillis());
+            p.getInfoHandler(LastSpawnHandler.CREATOR).setLastSpawn(System.currentTimeMillis());
             p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 1));
-            p.getActiveClass().grantInitialItems(p);
+            p.getInfoHandler(GameClassHandler.CREATOR).getActiveClass().grantInitialItems(p);
         }
         BossBarHandler.get().initForAll(this);
         this.waterRunner.start();
@@ -434,8 +436,8 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             ChatUtils.error(player.getPlayer(), Lang.RUNNING.getMessage().replace("<game>", name));
             return false;
         }
-        if (player.getGameEntry().getType() != User.GameEntry.Type.NONE) {
-            ChatUtils.error(player.getPlayer(), Lang.IN_GAME.getMessage().replace("<game>", player.getGameEntry().getGame().getName()));
+        if (player.getPlayingType() != User.PlayingType.NONE) {
+            ChatUtils.error(player.getPlayer(), Lang.IN_GAME.getMessage().replace("<game>", player.getGame().getName()));
             return false;
         }
         return true;

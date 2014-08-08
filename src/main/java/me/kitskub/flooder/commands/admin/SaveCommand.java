@@ -10,7 +10,7 @@ import org.bukkit.command.CommandSender;
 public class SaveCommand extends Command {
 
 	public SaveCommand() {
-		super(Perms.ADMIN_SAVE, Flooder.faCH(), "save");
+		super(Flooder.faCH(), "save", "", "save Flooder", Perms.ADMIN_SAVE);
 	}
 
 	@Override
@@ -18,15 +18,4 @@ public class SaveCommand extends Command {
 		Flooder.saveAll();
 		ChatUtils.send(cs, "Saved all data.");
 	}
-
-	@Override
-	public String getInfo() {
-		return "save Flooder";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "save";
-	}
-    
 }

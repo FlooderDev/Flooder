@@ -1,17 +1,17 @@
 package me.kitskub.flooder.commands.admin.add;
 
+import me.kitskub.flooder.Defaults.Perms;
+import me.kitskub.flooder.Flooder;
 import me.kitskub.gamelib.commands.Command;
 import me.kitskub.gamelib.commands.PlayerCommand;
 import me.kitskub.gamelib.utils.ChatUtils;
-import me.kitskub.flooder.Defaults.Perms; 
-import me.kitskub.flooder.Flooder;
 
 import org.bukkit.entity.Player;
 
 public class AddHelp extends PlayerCommand {
 
 	public AddHelp() {
-		super(Perms.ADMIN_ADD_HELP, Flooder.faCH(), "add");
+		super(Flooder.faCH(), "add", "", "add items", Perms.ADMIN_ADD_HELP);
 	}
 
 	@Override
@@ -21,15 +21,4 @@ public class AddHelp extends PlayerCommand {
 			ChatUtils.helpCommand(cs, c);
 		}
 	}
-
-	@Override
-	public String getInfo() {
-		return "add items";
-	}
-
-	@Override
-	public String getLocalUsage() {
-		return "add";
-	}
-	
 }
