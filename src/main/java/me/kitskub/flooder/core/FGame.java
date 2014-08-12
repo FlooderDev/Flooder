@@ -1,6 +1,7 @@
 package me.kitskub.flooder.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -52,7 +53,6 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     // Players
     private final Set<User> playing;
     private final Set<User> postWaiting;
-    private final Set<User> spectating;
     private final Set<Location> availableSpawns;
     //Listeners
     private final FGameListener listener;
@@ -69,7 +69,6 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
         this.playing = new HashSet<>();
         this.postWaiting = new HashSet<>();
-        this.spectating = new HashSet<>();
         this.availableSpawns = new HashSet<>();
 
         this.listener = new FGameListener(this);
@@ -142,22 +141,14 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
     @Override
     public synchronized void spectate(User player) {
-        if (state == GameState.INACTIVE || state == GameState.DISABLED) {
-            ChatUtils.error(player.getPlayer(), "There is no one in that game!");
-            return;
-        }
-        player.setGame(this, User.PlayingType.SPECTATING);
-        spectating.add(player);
-        joiningArena(player, active.specWarp);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void leaveSpectate(User player) {
-        player.setGame(null, User.PlayingType.NONE);
-        spectating.remove(player);
-        leavingArena(player);
+        throw new UnsupportedOperationException();
     }
-    
+
     private void leavingArena(User player) {
         player.unsubscribe(this);
         DataSave.loadData(player);
@@ -176,7 +167,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
     @Override
     public Set<User> getSpectatingPlayers() {
-        return new HashSet<>(spectating);
+        return Collections.emptySet();
     }
 
     public Set<User> getPostWaiting() {
@@ -187,7 +178,6 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     public Set<User> getAllPlayers() {
         HashSet<User> set = new HashSet<>(playing);
         set.addAll(postWaiting);
-        set.addAll(spectating);
         return set;
     }
 
@@ -208,10 +198,6 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             callEvent = true;
             waterRunner.stop();
             resetter.resetChanges();
-        }
-        list = new ArrayList<>(spectating);
-        for (User p : list) {
-            leaveSpectate(p);
         }
         list = new ArrayList<>(playing);
         for (User p : list) {
@@ -316,7 +302,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             p.getInfoHandler(GameClassHandler.CREATOR).getActiveClass().grantInitialItems(p);
         }
         this.waterRunner.start();
-        
+
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
         return true;
     }
@@ -398,11 +384,11 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 		do {
 			loc = active.spawnpoints.get(rand.nextInt(active.spawnpoints.size()));
 			if (loc == null) active.spawnpoints.remove(loc);
-			
+
 		} while (loc == null || !availableSpawns.remove(loc));
 		return loc;
 	}
- 
+
     @Override
     protected String checkValid() {
         if (getValidArenas().isEmpty()) return "There are no enabled arenas in game: " + name + "!"; //Must contain at least one valid arena
@@ -460,7 +446,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     @Override
     public boolean allowEditing(User user) {
         // TODO: only allow 20
-        return state == GameState.RUNNING; 
+        return state == GameState.RUNNING;
     }
 
     public boolean addChest(Chest c) {

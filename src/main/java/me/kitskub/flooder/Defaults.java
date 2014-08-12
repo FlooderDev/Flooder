@@ -26,7 +26,6 @@ import me.kitskub.flooder.commands.user.ClassCommand;
 import me.kitskub.flooder.commands.user.JoinCommand;
 import me.kitskub.flooder.commands.user.ListCommand;
 import me.kitskub.flooder.commands.user.QuitCommand;
-import me.kitskub.flooder.commands.user.SpectateCommand;
 import me.kitskub.flooder.commands.user.StatCommand;
 import me.kitskub.flooder.commands.user.SubscribeCommand;
 import me.kitskub.gamelib.Perm;
@@ -356,7 +355,6 @@ public class Defaults {
 	USER_JOIN(new JoinCommand()),
 	USER_LIST(new ListCommand()),
 	USER_QUIT(new QuitCommand()),
-	USER_SPECTATE(new SpectateCommand()),
 	USER_STAT(new StatCommand()),
 	USER_SUBSCRIBE(new SubscribeCommand());
 	
