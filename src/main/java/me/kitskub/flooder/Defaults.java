@@ -36,30 +36,43 @@ import org.bukkit.permissions.Permission;
 public class Defaults {
 	
     public enum Lang {
-	
-	QUIT("<player> has quit the game <game>."),
-	KILL("<killer> shot <killed> in game <game>."),
-	DEATH("<player> died in <game>"),
-	NO_PERM("You do not have permission."),
-	NO_WINNER("You do not have permission."),
-	WIN("You do not have permission."),
-	ALREADY_COUNTING_DOWN("<game> is already counting down."),
-	NOT_ENABLED("<game> is currently not enabled."),
-	NOT_RUNNING("<game> is not running."),
-	NOT_EXIST("<item> does not exist."),
-	RUNNING("<game> is already running."),
-	IN_GAME("You are in <game>."),
-	NOT_IN_GAME("You are not in a game.");
-	
-	
-	private String value;
-	
-	private Lang(String message) {
-	    this.value = message;
+
+	KILL("kill", "<killer> killed <killed> in game <game>."),
+	NO_PERM("no-perm", "You do not have permission."),
+	TIE("tie", "Nobody won the game <game> because there was a tie."),
+	WIN("win", "<team> has won the game <game>!"),
+	ALREADY_COUNTING_DOWN("counting", "<game> is already counting down."),
+	NOT_ENABLED("not-enabled", "<game> is currently not enabled."),
+	NOT_RUNNING("not-running", "<game> is not running."),
+	NOT_EXIST("not-exist", "<item> does not exist."),
+	RUNNING("running", "<game> is already running."),
+	IN_GAME("in-game", "You are in <game>."),
+	NOT_IN_GAME("not-in-game", "You are not in a game."),
+	NOT_WHILE_PLAYING("not-while-playing", "You cannot do that while playing!"),
+	CLASS_NOT_EXIST("class-not-exist", "That class does not exist."),
+	CLASS_CANNOT_USE("class-cannot-user", "You do not have permission to use that class!"),
+	CLASS_CHOSEN("class-chosen", "You have chosen '<name>'"),
+	SET_AS_READY("set-as-ready", "You have been set as ready!"),
+    STARTING("starting", "Starting <game> in <time>..."),
+    TAKING_ZONE("taking-zone", "<player> has begun taking the mountain!"),
+    OUTOFTIME("game-out-of-time", "<game> is ending because it ran out of time!"),
+    TIMELEFT("game-time-left", "<game> has <time> minute(s) left.");
+
+
+	private final String config;
+	private final String def;
+
+	private Lang(String config, String message) {
+        this.config = config;
+	    this.def = message;
 	}
-	
+
+    public String getConfig() {
+        return config;
+    }
+
 	public String getMessage(){
-	    return value;
+        return Files.LANG.getConfig().getString(config, def);
 	}
     }
 

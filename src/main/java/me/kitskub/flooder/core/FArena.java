@@ -22,10 +22,11 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 	public final List<Location> spawnpoints;
     public Zone takeZone;
     public Location specWarp;
+    public Location lobbyWarp;
 
     public FArena(String name, ConfigSection coords) {
         super(Flooder.getInstance(), name, coords);
-        this.spawnpoints = new ArrayList<Location>();
+        this.spawnpoints = new ArrayList<>();
     }
 
     @Override
@@ -49,6 +50,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
             takeZone = new FZone(takeCuboid, this);
         }
         specWarp = GeneralUtils.parseToLoc(coords.getString("spec-warp", ""));
+        lobbyWarp = GeneralUtils.parseToLoc(coords.getString("lobby-warp", ""));
         return super.doLoad();
     }
 
@@ -66,6 +68,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
             coords.set("take-zone", takeZone.getCuboid().parseToString());
         }
         if (specWarp != null) coords.set("spec-warp", GeneralUtils.parseToString(specWarp));
+        if (lobbyWarp != null) coords.set("lobby-warp", GeneralUtils.parseToString(lobbyWarp));
         return super.doSave();
     }
 
@@ -90,7 +93,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
 
     @Override
     public Collection<String> verifyData() {
-        Set<String> errors = new HashSet<String>(super.verifyData());
+        Set<String> errors = new HashSet<>(super.verifyData());
         if (spawnpoints.size() < 2) {
             errors.add("There are less than two spawnpoints!");
         }
@@ -99,6 +102,9 @@ public class FArena extends AbstractArena<Flooder, FGame> {
         }
         if (specWarp == null) {
             errors.add("No spectator warp.");
+        }
+        if (lobbyWarp == null) {
+            errors.add("No lobby warp.");
         }
         return errors;
     }

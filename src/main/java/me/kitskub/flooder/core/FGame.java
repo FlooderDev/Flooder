@@ -1,16 +1,16 @@
 package me.kitskub.flooder.core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.Logging;
+import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.flooder.listeners.FGameListener;
 import me.kitskub.flooder.listeners.WaterRunner;
 import me.kitskub.flooder.reset.GameResetter;
@@ -23,10 +23,10 @@ import me.kitskub.gamelib.api.event.GameStartedEvent;
 import me.kitskub.gamelib.api.event.PlayerJoinGameEvent;
 import me.kitskub.gamelib.api.event.PlayerKilledEvent;
 import me.kitskub.gamelib.api.event.PlayerLeftGameEvent;
-import me.kitskub.gamelib.framework.Arena.ArenaState;
 import me.kitskub.gamelib.framework.Game.GameState;
 import me.kitskub.gamelib.framework.TimedGame;
 import me.kitskub.gamelib.framework.User;
+import me.kitskub.gamelib.framework.impl.AbstractGame;
 import me.kitskub.gamelib.framework.impl.GameMasterImpl;
 import me.kitskub.gamelib.framework.infohandler.GameClassHandler;
 import me.kitskub.gamelib.games.DataSave;
@@ -47,18 +47,13 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 
-public class FGame implements TimedGame<Flooder, FGame, FArena> {
-    private final String name;
-    private final List<FArena> arenas;
+public class FGame extends AbstractGame<Flooder, FGame, FArena> implements TimedGame<Flooder, FGame, FArena> {
     public Location finishedWarp;
-
-    private FArena active;
-    private GameState state;
-    private GameCountdown countdown;
     // Players
-    private final Set<User> players;
+    private final Set<User> playing;
+    private final Set<User> postWaiting;
     private final Set<User> spectating;
-	private final Map<String, Location> spawnsTaken;
+    private final Set<Location> availableSpawns;
     //Listeners
     private final FGameListener listener;
     private final GameResetter resetter;
@@ -67,15 +62,15 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     private final Set<Chest> chests;
 
     public FGame(String name) {
-        this.name = name;
-        this.arenas = new ArrayList<>();
+        super(name);
         this.active = null;
         this.state = GameState.DISABLED;
         this.countdown = null;
 
-        this.players = new HashSet<>();
+        this.playing = new HashSet<>();
+        this.postWaiting = new HashSet<>();
         this.spectating = new HashSet<>();
-        this.spawnsTaken = new HashMap<>();
+        this.availableSpawns = new HashSet<>();
 
         this.listener = new FGameListener(this);
         this.resetter = new GameResetter(this);
@@ -85,99 +80,61 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean setEnabled(boolean flag) {
-        return setEnabled(flag, Bukkit.getConsoleSender());
-    }
-
-    @Override
-    public synchronized boolean setEnabled(boolean flag, CommandSender cs) {
-        if (!flag) {
-            if (state == GameState.RUNNING) cancelGame();
-            state = GameState.DISABLED;
-        }
-        if (flag && state == GameState.DISABLED) {
-            String valid = checkValid();
-            if (valid == null) state = GameState.INACTIVE;
-            else {
-                ChatUtils.error(cs, valid + " Cannot enable!");
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    @Override
-    public void addArena(FArena a) {
-        arenas.add(a);
-        validate();
-    }
-
-    @Override
-    public Set<FArena> getArenas() {
-        return new HashSet<FArena>(arenas);
-    }
-
-    @Override
-    public FArena getActiveArena() {
-        return active;
-    }
-
-    @Override
     public synchronized void join(User player) {
         if (!preJoinValidation(player)) {
             return;
         }
-        player.setGame(this, User.PlayingType.PLAYING);
-        if (players.isEmpty()) {
+	    if (isFull()) {
+		    ChatUtils.error(player.getPlayer(), "%s is already full.", name);
+	    }
+        if (state == GameState.INACTIVE) {
+            if (!playing.isEmpty()) {
+                Logging.warning("Game was inactive with players!");
+            }
             state = GameState.WAITING;
             pickArena();
         }
 	    boolean canceled = false;
-	    if (spawnsTaken.size() >= active.spawnpoints.size()) {
-		    ChatUtils.error(player.getPlayer(), "%s is already full.", name);
-		    canceled = true;
-	    }
 	    PlayerJoinGameEvent event = new PlayerJoinGameEvent(this, player);
 	    if (!canceled) Bukkit.getPluginManager().callEvent(event);
 	    if (canceled || event.isCancelled()) {
-		    if (players.isEmpty()) {
+		    if (playing.isEmpty()) {
                 clearArena();
                 state = GameState.INACTIVE;
             }
 		    return;
 	    }
-	    Location loc = getNextOpenSpawnPoint();
-	    spawnsTaken.put(player.getPlayerName(), loc);
+        player.setGame(this, User.PlayingType.PLAYING);
         DataSave.saveDataWithInvClear(player);
+	    Location loc = getNextOpenSpawnPoint();
+        player.getInfoHandler(SpawnTakenHandler.CREATOR).setSpawnTaken(loc);
         player.getInfoHandler(GameClassHandler.CREATOR).setClass(FClass.blank, false);
+        player.getPlayer().teleport(active.lobbyWarp);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
     }
 
     @Override
     public synchronized void leave(User player) {
         if (!leavingGame(player)) return;
-        if (players.isEmpty()) {
+        if (playing.isEmpty()) {
+            Logging.debug("Player left and there are no players in.");
             cancelGame();
             return;
         }
-        if (state == GameState.RUNNING && players.size() == 1) {
-            win(players.iterator().next());
+        if (state == GameState.RUNNING) {
+            if (playing.size() == 1) {
+                win(playing.iterator().next());
+            }
         }
     }
 
     private synchronized boolean leavingGame(User player) {
-        if (!players.remove(player)) return false;
+        if (!playing.remove(player) & !postWaiting.remove(player)) return false;
         player.getInfoHandler(GameClassHandler.CREATOR).setClass(null);
-        if (player.getPlayer().isOnline()) player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         player.getPlayer().removePotionEffect(PotionEffectType.JUMP);
         BossBarHandler.get().remove(player);
         leavingArena(player);
-        spawnsTaken.remove(player.getPlayerName());
         player.setGame(null, User.PlayingType.NONE);
         Bukkit.getPluginManager().callEvent(new PlayerLeftGameEvent(this, player));
         return true;
@@ -214,17 +171,22 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     @Override
     public Set<User> getActivePlayers() {
-        return new HashSet<User>(players);
+        return new HashSet<>(playing);
     }
 
     @Override
     public Set<User> getSpectatingPlayers() {
-        return new HashSet<User>(spectating);
+        return new HashSet<>(spectating);
+    }
+
+    public Set<User> getPostWaiting() {
+        return new HashSet<>(postWaiting);
     }
 
     @Override
     public Set<User> getAllPlayers() {
-        HashSet<User> set = new HashSet<User>(players);
+        HashSet<User> set = new HashSet<>(playing);
+        set.addAll(postWaiting);
         set.addAll(spectating);
         return set;
     }
@@ -251,7 +213,11 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         for (User p : list) {
             leaveSpectate(p);
         }
-        list = new ArrayList<>(players);
+        list = new ArrayList<>(playing);
+        for (User p : list) {
+            leavingGame(p);
+        }
+        list = new ArrayList<>(postWaiting);
         for (User p : list) {
             leavingGame(p);
         }
@@ -278,7 +244,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     public void win(final User winner) {
         ChatUtils.broadcast(this, winner.getPlayerName() + " has won the game!");
-        for (User u : players) {
+        for (User u : playing) {
             if (u == winner) {
                 Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
                     @Override
@@ -313,7 +279,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         } else if (state == GameState.RUNNING) {
             return sendErrorAndReturnFalse(cs, Lang.RUNNING.getMessage().replace("<game>", name));
         }
-		if (players.size() < 2 || players.size() < Config.MIN_PLAYERS.getGlobalInt()) {
+		if (playing.size() < 2 || playing.size() < Config.MIN_PLAYERS.getGlobalInt()) {
             return sendErrorAndReturnFalse(cs, String.format("There are not enough players in %s", name));
         }
 		if (countdown != null) {
@@ -323,8 +289,11 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             countdown.cancel();
             countdown = null;
 		} else {
-            for (User p : players) {
-                joiningArena(p, spawnsTaken.get(p.getPlayerName()));
+            for (User p : playing) {
+                joiningArena(p, p.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken());
+            }
+            for (User p : playing) {
+                p.getPlayer().teleport(p.getPlayer());
             }
         }
         if (seconds > 0) {
@@ -338,14 +307,14 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             cancelGame();
             return sendErrorAndReturnFalse(cs, "Game cancelled by event");
         }
+        availableSpawns.clear();
         resetter.init();
         state = GameState.RUNNING;
-        for (User p : players) {
+        for (User p : playing) {
             p.getInfoHandler(LastSpawnHandler.CREATOR).setLastSpawn(System.currentTimeMillis());
             p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 1));
             p.getInfoHandler(GameClassHandler.CREATOR).getActiveClass().grantInitialItems(p);
         }
-        BossBarHandler.get().initForAll(this);
         this.waterRunner.start();
         
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
@@ -355,47 +324,6 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     private static boolean sendErrorAndReturnFalse(CommandSender cs, String message) {
         ChatUtils.error(cs, message);
         return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final FGame other = (FGame) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        return true;
-    }
-
-	@Override
-	public String getInfo() {
-		return String.format("%s - Enabled: %b", name, state != GameState.DISABLED);
-	}
-    
-    @Override
-	public void listStats(CommandSender cs) {
-        if (state != GameState.RUNNING) {
-            ChatUtils.send(cs, "State: " + state.name());
-            return;
-        }
-        // TODO better stats
-	}
-
-    @Override
-    public synchronized GameState getState() {
-        return state;
     }
 
     @Override
@@ -447,6 +375,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
         List<FArena> valid = getValidArenas();
         active = valid.get(new Random().nextInt(valid.size()));
         active.setActiveGame(this);
+        availableSpawns.addAll(active.spawnpoints);
 
         Bukkit.getPluginManager().registerEvents(listener, Flooder.getInstance());
     }
@@ -470,30 +399,12 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 			loc = active.spawnpoints.get(rand.nextInt(active.spawnpoints.size()));
 			if (loc == null) active.spawnpoints.remove(loc);
 			
-		} while (loc == null || spawnsTaken.containsValue(loc));
+		} while (loc == null || !availableSpawns.remove(loc));
 		return loc;
 	}
-
-    private List<FArena> getValidArenas() {
-        List<FArena> validArenas = new ArrayList<FArena>();
-        for (FArena a : arenas) {
-            if (a.getState() != ArenaState.DISABLED) validArenas.add(a);
-        }
-        return validArenas;
-    }
-
+ 
     @Override
-    public String validate() {
-        String valid = checkValid();
-        if (valid == null) {
-            setEnabled(true);
-        } else {
-            setEnabled(false);
-        }
-        return valid;
-    }
-    
-    private String checkValid() {
+    protected String checkValid() {
         if (getValidArenas().isEmpty()) return "There are no enabled arenas in game: " + name + "!"; //Must contain at least one valid arena
         if (finishedWarp == null) return "The finished warp is not set!";
         return null;
@@ -507,17 +418,19 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
             killer.getPlayer().playSound(killed.getPlayer().getLocation(), Sound.SUCCESSFUL_HIT, 1, 1);
         }
         Bukkit.getPluginManager().callEvent(new PlayerKilledEvent(this, killed, killer));
-        leave(killed);
+        playing.remove(killed);
+        postWaiting.add(killed);
+        if (playing.size() == 1) win(playing.iterator().next());
     }
 
     @Override
     public void setPlayerReady(User user) {
-        ChatUtils.send(user.getPlayer(), "You have been set as ready!");
-        players.add(user);
+        //ChatUtils.send(user.getPlayer(), "You have been set as ready!");
+        playing.add(user);
         Bukkit.getScheduler().runTask(Flooder.getInstance(), new Runnable() {
             @Override
             public void run() {
-                if (players.size() >= Config.MIN_READY.getGlobalInt()) {
+                if (playing.size() >= Config.MIN_READY.getGlobalInt()) {
                     startGame();
                 }
             }
@@ -531,7 +444,7 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     @Override
     public PlayerStat<FGame> newStat(User player) {
-        return new PlayerStat<FGame>(this, player);
+        return new PlayerStat<>(this, player);
     }
 
     @Override
@@ -540,22 +453,8 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
     }
 
     @Override
-    public int pointsToWin() {
-        return -1;
-    }
-
-    public int pointsFromWin() {
-        return 0;
-    }
-
-    @Override
     public int duration() {
         return Defaults.Config.GAME_DURATION.getGlobalInt();
-    }
-
-    @Override
-    public int pointPollInterval() {
-        return 0;
     }
 
     @Override
@@ -570,19 +469,15 @@ public class FGame implements TimedGame<Flooder, FGame, FArena> {
 
     @Override
     public boolean isFull() {
-        return active != null && spawnsTaken.size() >= active.spawnpoints.size();
-    }
-
-    public Location getSpawnsTaken(User user) {
-        return spawnsTaken.get(user.getPlayerName());
+        return availableSpawns.isEmpty();
     }
 
     public GameResetter getResetter() {
         return resetter;
     }
 
-    public static GameMasterImpl.GameCreator<FGame> CREATOR = new PBGameCreator();
-    private static class PBGameCreator implements GameMasterImpl.GameCreator<FGame> {
+    public static GameMasterImpl.GameCreator<FGame> CREATOR = new FGameCreator();
+    private static class FGameCreator implements GameMasterImpl.GameCreator<FGame> {
         @Override
         public FGame createGame(String name) {
             return new FGame(name);

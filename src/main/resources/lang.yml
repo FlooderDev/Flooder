@@ -1,2 +1,21 @@
-prefix: '[Paintball]'
-
+# To turn off a message, set it to "''"
+kill: '<killer> shot <killed> in game <game>.'
+no-perm: 'You do not have permission.'
+tie: 'Nobody won the game <game> because there was a tie.'
+win: '<team> has won the game <game>!'
+counting: '<game> is already counting down.'
+not-enabled: '<game> is currently not enabled.'
+not-running: '<game> is not running.'
+not-exist: '<item> does not exist.'
+running: '<game> is already running.'
+in-game: 'You are in <game>.'
+not-in-game: 'You are not in a game.'
+not-while-playing: 'You cannot do that while playing!'
+class-not-exist: 'That class does not exist!'
+class-cannot-use: 'You do not have permission to use that class!'
+class-chosen: "You have chosen '<name>'"
+set-as-ready: 'You have been set as ready!'
+starting: 'Starting <game> in <time>...'
+taking-zone: '<player> has begun taking the mountain!'
+game-out-of-time: '<game> is ending because it ran out of time!'
+game-time-left: '<game> has <time> minute(s) left.'

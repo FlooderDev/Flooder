@@ -10,6 +10,7 @@ import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.ItemConfig;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
+import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.gamelib.api.event.UserClassChosenEvent;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
@@ -23,12 +24,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class FGameListener implements Listener {
@@ -131,7 +134,7 @@ public class FGameListener implements Listener {
 
 		}
 
-		ArrayList<ItemStack> arrayItemStack = new ArrayList<ItemStack>(map.keySet());
+		ArrayList<ItemStack> arrayItemStack = new ArrayList<>(map.keySet());
 		if (arrayItemStack.isEmpty()) {
 			arrayItemStack.add(last);//Just in case
 		}
@@ -147,7 +150,7 @@ public class FGameListener implements Listener {
 	}
 
 	private static List<Integer> range(int min, int max) {
-		List<Integer> list = new ArrayList<Integer>();
+		List<Integer> list = new ArrayList<>();
 		for (int i = min; i <= max; i++) {
 			list.add(i);
 		}
@@ -170,7 +173,7 @@ public class FGameListener implements Listener {
                 event.getFrom().getBlockY() != event.getTo().getBlockY() ||
                 event.getFrom().getBlockZ() != event.getTo().getBlockZ()
                 )) {
-            Location frozenLoc = game.getSpawnsTaken(user);
+            Location frozenLoc = user.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken();
             Location loc = frozenLoc.clone();
 			loc.setPitch(event.getPlayer().getLocation().getPitch());
 			loc.setYaw(event.getPlayer().getLocation().getYaw());
@@ -184,12 +187,30 @@ public class FGameListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerHurt(EntityDamageEvent e) {
+        if (!(e.getEntity() instanceof Player)) return;
+        User user = User.get((Player) e.getEntity());
+        if (user.getGame() == game && (game.getState().isPreGame() || !game.getActivePlayers().contains(user))) {
+            e.setCancelled(true);
+        }
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         User user = User.get(event.getEntity());
         if (user.getGame() != game) return;
         User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
         game.playerKilled(killer, user);
+        event.setDeathMessage(null);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        User user = User.get(event.getPlayer());
+        if (game.getPostWaiting().contains(user)) {
+            event.getPlayer().teleport(game.getActiveArena().lobbyWarp);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
