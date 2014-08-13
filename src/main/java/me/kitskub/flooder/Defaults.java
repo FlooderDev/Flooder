@@ -37,9 +37,10 @@ public class Defaults {
     public enum Lang {
 
 	KILL("kill", "<killer> killed <killed> in game <game>."),
+	DIEDFROMWATER("died-from-water", "<player> died from water."),
 	NO_PERM("no-perm", "You do not have permission."),
 	TIE("tie", "Nobody won the game <game> because there was a tie."),
-	WIN("win", "<team> has won the game <game>!"),
+	WIN("win", "<player> has won the game <game>!"),
 	ALREADY_COUNTING_DOWN("counting", "<game> is already counting down."),
 	NOT_ENABLED("not-enabled", "<game> is currently not enabled."),
 	NOT_RUNNING("not-running", "<game> is not running."),
@@ -54,6 +55,8 @@ public class Defaults {
 	SET_AS_READY("set-as-ready", "You have been set as ready!"),
     STARTING("starting", "Starting <game> in <time>..."),
     TAKING_ZONE("taking-zone", "<player> has begun taking the mountain!"),
+    NO_TAKE("no-take", "<player> can't take the mountain because <entered> has entered it."),
+    TAKEN("taken", "<player> has taken the mountain!"),
     OUTOFTIME("game-out-of-time", "<game> is ending because it ran out of time!"),
     TIMELEFT("game-time-left", "<game> has <time> minute(s) left.");
 

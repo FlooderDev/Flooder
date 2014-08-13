@@ -10,7 +10,6 @@ import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
-import me.kitskub.flooder.Logging;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.flooder.listeners.FGameListener;
 import me.kitskub.flooder.listeners.WaterRunner;
@@ -18,6 +17,7 @@ import me.kitskub.flooder.reset.GameResetter;
 import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.GameCountdown;
 import me.kitskub.gamelib.GameLib;
+import me.kitskub.gamelib.Logging;
 import me.kitskub.gamelib.api.event.GameEndEvent;
 import me.kitskub.gamelib.api.event.GamePreStartEvent;
 import me.kitskub.gamelib.api.event.GameStartedEvent;
@@ -42,7 +42,6 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -83,17 +82,19 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         if (!preJoinValidation(player)) {
             return;
         }
-	    if (isFull()) {
-		    ChatUtils.error(player.getPlayer(), "%s is already full.", name);
-	    }
         if (state == GameState.INACTIVE) {
             if (!playing.isEmpty()) {
                 Logging.warning("Game was inactive with players!");
+                System.out.println(playing);
             }
             state = GameState.WAITING;
             pickArena();
         }
-	    boolean canceled = false;
+        boolean canceled = false;
+	    if (isFull()) {
+		    ChatUtils.error(player.getPlayer(), "%s is already full.", name);
+            canceled = true;
+	    }
 	    PlayerJoinGameEvent event = new PlayerJoinGameEvent(this, player);
 	    if (!canceled) Bukkit.getPluginManager().callEvent(event);
 	    if (canceled || event.isCancelled()) {
@@ -103,13 +104,17 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             }
 		    return;
 	    }
+
         player.setGame(this, User.PlayingType.PLAYING);
-        DataSave.saveDataWithInvClear(player);
+        joiningArena(player, active.lobbyWarp);
 	    Location loc = getNextOpenSpawnPoint();
         player.getInfoHandler(SpawnTakenHandler.CREATOR).setSpawnTaken(loc);
         player.getInfoHandler(GameClassHandler.CREATOR).setClass(FClass.blank, false);
-        player.getPlayer().teleport(active.lobbyWarp);
+        playing.add(player);
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
+        if (playing.size() >= Config.MIN_READY.getGlobalInt()) {
+            startGame();
+        }
     }
 
     @Override
@@ -127,37 +132,45 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         }
     }
 
-    private synchronized boolean leavingGame(User player) {
-        if (!playing.remove(player) & !postWaiting.remove(player)) return false;
+    private boolean leavingGame(User player) {
+        if (!playing.remove(player) && !postWaiting.remove(player)) return false;
+
+        // Because in the future, we may want a callback for the class
         player.getInfoHandler(GameClassHandler.CREATOR).setClass(null);
+        // Visual cleanup
         player.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        player.getPlayer().removePotionEffect(PotionEffectType.JUMP);
         BossBarHandler.get().remove(player);
+        // Potion effect
+        player.getPlayer().removePotionEffect(PotionEffectType.JUMP);
         leavingArena(player);
+        if (state.isPreGame()) {
+            availableSpawns.add(player.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken());
+        }
         player.setGame(null, User.PlayingType.NONE);
         Bukkit.getPluginManager().callEvent(new PlayerLeftGameEvent(this, player));
         return true;
     }
 
     @Override
-    public synchronized void spectate(User player) {
+    public void spectate(User player) {
         throw new UnsupportedOperationException();
-    }
+        }
 
     @Override
     public void leaveSpectate(User player) {
         throw new UnsupportedOperationException();
     }
 
+    private void joiningArena(User player, Location toTeleport) {
+        player.getPlayer().teleport(toTeleport);
+        DataSave.saveDataWithInvClear(player);
+        player.subscribe(this);
+    }
+
     private void leavingArena(User player) {
         player.unsubscribe(this);
         DataSave.loadData(player);
         player.getPlayer().teleport(finishedWarp);
-    }
-
-    private void joiningArena(User player, Location toTeleport) {
-        player.getPlayer().teleport(toTeleport);
-        player.subscribe(this);
     }
 
     @Override
@@ -207,6 +220,11 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         for (User p : list) {
             leavingGame(p);
         }
+        if (!playing.isEmpty() || !postWaiting.isEmpty()) {
+            Logging.severe("Playing not empty after cancelGame()");
+            System.out.println(playing);
+            System.out.println(postWaiting);
+        }
         clearArena();
         state = GameState.INACTIVE;
         if (callEvent) Bukkit.getPluginManager().callEvent(new GameEndEvent(this));
@@ -216,40 +234,41 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     @Override
     public void endByTime() {
         ChatUtils.broadcast(this, "The game has ended because time ran out.");
+        cancelGame();
     }
 
     @Override
     public String outOfTimeMessage() {
-        return "<game> is ending because it ran out of time!";
+        return Defaults.Lang.OUTOFTIME.getMessage();
     }
 
     @Override
     public String timeLeftMessage() {
-        return "<game> has <time> minute(s) left.";
+        return Defaults.Lang.TIMELEFT.getMessage();
     }
 
     public void win(final User winner) {
-        ChatUtils.broadcast(this, winner.getPlayerName() + " has won the game!");
+        ChatUtils.broadcast(this, Defaults.Lang.WIN.getMessage().replace("<player>", winner.getPlayerName()));
         for (User u : playing) {
             if (u == winner) {
-                Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
+                    Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
+                        @Override
+                        public void run() {
                         winner.getPlayer().playSound(winner.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
-                }
-                }, 2);
+                            }
+                    }, 2);
                 getOwningPlugin().getStatManager().get(winner).addWin();
-            } else {
+                } else {
                 final User loser = u;
-                Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
-                    @Override
-                    public void run() {
+                    Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
+                        @Override
+                        public void run() {
                         loser.getPlayer().playSound(loser.getPlayer().getLocation(), Sound.LEVEL_UP, 1, 1);
-                    }
-                }, 2);
+                            }
+                    }, 2);
                 getOwningPlugin().getStatManager().get(u).addLoss();
-            }
-        }
+                    }
+                }
         cancelGame();
     }
 
@@ -268,24 +287,20 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 		if (playing.size() < 2 || playing.size() < Config.MIN_PLAYERS.getGlobalInt()) {
             return sendErrorAndReturnFalse(cs, String.format("There are not enough players in %s", name));
         }
-		if (countdown != null) {
-			if (seconds >= countdown.getTimeLeft()) {
-                return sendErrorAndReturnFalse(cs, Lang.ALREADY_COUNTING_DOWN.getMessage().replace("<game>", name));
+		if (countdown == null) {
+            teleportUsersToSpawn();
+            if (seconds > 0) {
+                countdown = new GameCountdown(this, seconds, cs, Lang.STARTING.getMessage());
+                state = GameState.COUNTING;
+                return true;
             }
-            countdown.cancel();
-            countdown = null;
-		} else {
-            for (User p : playing) {
-                joiningArena(p, p.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken());
+        } else {
+            if (seconds > 0) {
+                countdown.resetTo(seconds);
+            } else {
+                countdown.cancel();
+                countdown = null;
             }
-            for (User p : playing) {
-                p.getPlayer().teleport(p.getPlayer());
-            }
-        }
-        if (seconds > 0) {
-            countdown = new GameCountdown(this, seconds, cs, GameCountdown.getDefaultStartingString());
-            state = GameState.COUNTING;
-            return true;
         }
         GamePreStartEvent event = new GamePreStartEvent(this);
         Bukkit.getPluginManager().callEvent(event);
@@ -298,7 +313,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         state = GameState.RUNNING;
         for (User p : playing) {
             p.getInfoHandler(LastSpawnHandler.CREATOR).setLastSpawn(System.currentTimeMillis());
-            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 1));
+            p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 3));
             p.getInfoHandler(GameClassHandler.CREATOR).getActiveClass().grantInitialItems(p);
         }
         this.waterRunner.start();
@@ -310,6 +325,12 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     private static boolean sendErrorAndReturnFalse(CommandSender cs, String message) {
         ChatUtils.error(cs, message);
         return false;
+    }
+
+    private void teleportUsersToSpawn() {
+        for (User p : playing) {
+            joiningArena(p, p.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken());
+        }
     }
 
     @Override
@@ -367,6 +388,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     }
 
     private void clearArena() {
+        active.takeZone.reset();
         active.setActiveGame(null);
         active = null;
 
@@ -374,7 +396,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
         for (Chest c : chests) {
             c.getBlockInventory().clear();
-        }
+    }
         chests.clear();
     }
 
@@ -396,10 +418,8 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         return null;
     }
 
-    // TODO: causes
     public synchronized void playerKilled(User killer, User killed) {
-        Player killedPlayer = killed.getPlayer();
-        killedPlayer.getWorld().playEffect(killed.getPlayer().getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
+        killed.getPlayer().getWorld().playEffect(killed.getPlayer().getLocation(), Effect.MOBSPAWNER_FLAMES, 0);
         if (killer != null) {
             killer.getPlayer().playSound(killed.getPlayer().getLocation(), Sound.SUCCESSFUL_HIT, 1, 1);
         }
@@ -411,16 +431,6 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
     @Override
     public void setPlayerReady(User user) {
-        //ChatUtils.send(user.getPlayer(), "You have been set as ready!");
-        playing.add(user);
-        Bukkit.getScheduler().runTask(Flooder.getInstance(), new Runnable() {
-            @Override
-            public void run() {
-                if (playing.size() >= Config.MIN_READY.getGlobalInt()) {
-                    startGame();
-                }
-            }
-        });
     }
 
     @Override
@@ -455,7 +465,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
     @Override
     public boolean isFull() {
-        return availableSpawns.isEmpty();
+        return active != null && availableSpawns.isEmpty();
     }
 
     public GameResetter getResetter() {

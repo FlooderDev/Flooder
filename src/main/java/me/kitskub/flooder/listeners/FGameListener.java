@@ -5,13 +5,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.ItemConfig;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
+import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.api.event.UserClassChosenEvent;
+import me.kitskub.gamelib.api.event.zone.UserLeftZoneEvent;
+import me.kitskub.gamelib.api.event.zone.ZoneTakenEvent;
+import me.kitskub.gamelib.api.event.zone.ZoneTakingInterruptedEvent;
+import me.kitskub.gamelib.api.event.zone.ZoneTakingTickEvent;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
@@ -165,6 +171,7 @@ public class FGameListener implements Listener {
             Block lower = event.getPlayer().getLocation().getBlock();
             Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
             if (lower.getType() == Material.WATER || lower.getType() == Material.STATIONARY_WATER || upper.getType() == Material.WATER || upper.getType() == Material.STATIONARY_WATER) {
+                ChatUtils.broadcast(game, Defaults.Lang.DIEDFROMWATER.getMessage().replace("<player>", user.getDisplayName()));
                 user.getPlayer().setHealth(0);
             }
         }
@@ -218,5 +225,39 @@ public class FGameListener implements Listener {
         if (e.getUser().getGame() == game && game.getState().isPreGame()) {
             game.setPlayerReady(e.getUser());
         }
+    }
+
+    @EventHandler
+    public void onZoneTakingTick(ZoneTakingTickEvent e) {
+        if (e.getGame() != game) return;
+        Set<User> usersIn = e.getZone().getUsersIn();
+        for (User u : usersIn) {
+            BossBarHandler.get().updatePercent(u, 100 * (1 - e.getPercentDone()));
+        }
+    }
+
+    @EventHandler
+    public void onZoneTakingInterrupted(ZoneTakingInterruptedEvent e) {
+        if (e.getGame() != game) return;
+        Set<User> usersIn = e.getZone().getUsersIn();
+        for (User u : usersIn) {
+            BossBarHandler.get().remove(u);
+        }
+    }
+
+    @EventHandler
+    public void onUserLeaveZone(UserLeftZoneEvent e) {
+        if (e.getGame() != game) return;
+        BossBarHandler.get().remove(e.getUser());
+    }
+
+    @EventHandler
+    public void onZoneTakenEvent(ZoneTakenEvent e) {
+        if (e.getGame() != game) return;
+        Set<User> usersIn = e.getZone().getUsersIn();
+        for (User u : usersIn) {
+            BossBarHandler.get().remove(u);
+        }
+        game.win((User) e.getTaken());
     }
 }

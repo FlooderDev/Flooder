@@ -3,6 +3,7 @@ package me.kitskub.flooder.utils;
 import me.confuser.barapi.BarAPI;
 import me.kitskub.flooder.Logging;
 import me.kitskub.gamelib.framework.User;
+import org.bukkit.entity.Player;
 
 public class BossBarHandler {
     private static BarHandler instance;
@@ -22,12 +23,17 @@ public class BossBarHandler {
     public static interface BarHandler {
         void remove(User user);
 
-        void updatePercent(User u , float percent);
+        void updatePercent(User u, float percent);
     }
 
     private static class BarAPIHandler implements BarHandler {
         public void updatePercent(User u, float percent) {
-            BarAPI.setMessage(u.getPlayer(), "Time Remaining", percent);
+            Player p = u.getPlayer();
+            if (BarAPI.hasBar(p)) {
+                BarAPI.setHealth(u.getPlayer(), percent);
+            } else {
+                BarAPI.setMessage(p, "Time Remaining", percent);
+            }
         }
 
         public void remove(User user) {

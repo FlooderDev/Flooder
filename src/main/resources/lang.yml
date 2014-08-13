@@ -1,8 +1,9 @@
 # To turn off a message, set it to "''"
 kill: '<killer> shot <killed> in game <game>.'
+died-from-water: '<player> died from water.'
 no-perm: 'You do not have permission.'
 tie: 'Nobody won the game <game> because there was a tie.'
-win: '<team> has won the game <game>!'
+win: '<player> has won the game <game>!'
 counting: '<game> is already counting down.'
 not-enabled: '<game> is currently not enabled.'
 not-running: '<game> is not running.'
@@ -17,5 +18,7 @@ class-chosen: "You have chosen '<name>'"
 set-as-ready: 'You have been set as ready!'
 starting: 'Starting <game> in <time>...'
 taking-zone: '<player> has begun taking the mountain!'
+no-take: "<player> can't take the mountain because <entered> has entered it."
+taken: '<player> has taken the mountain!'
 game-out-of-time: '<game> is ending because it ran out of time!'
 game-time-left: '<game> has <time> minute(s) left.'

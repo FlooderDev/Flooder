@@ -78,8 +78,9 @@ public class FClass implements GameClass {
 
     @Override
     public boolean checkPermission(User user) {
+        if (this == blank) return true;
         if (!GameLib.hasPermission(user.getPlayer(), reguiredPerm)) {
-            ChatUtils.error(user.getPlayer(), DEFAULT_NOPERM);
+            ChatUtils.error(user.getPlayer(), Defaults.Lang.CLASS_CANNOT_USE.getMessage());
             return false;
         }
         return true;
@@ -87,7 +88,7 @@ public class FClass implements GameClass {
 
     @Override
     public String getChosenMessage() {
-        return DEFAULT_CHOSEN;
+        return Defaults.Lang.CLASS_CHOSEN.getMessage();
     }
 
     @Override
