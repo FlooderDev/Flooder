@@ -12,6 +12,7 @@ import me.kitskub.flooder.ItemConfig;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
+import me.kitskub.flooder.core.infohandler.WaterHurtHandler;
 import me.kitskub.flooder.utils.BossBarHandler;
 import me.kitskub.gamelib.api.event.UserClassChosenEvent;
 import me.kitskub.gamelib.api.event.zone.UserLeftZoneEvent;
@@ -22,8 +23,6 @@ import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +31,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -167,13 +167,8 @@ public class FGameListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         User user = User.get(event.getPlayer());
         if (user.getGame() != game || user.getPlayingType() != User.PlayingType.PLAYING) return;
-        if (game.getState() == Game.GameState.RUNNING) {
-            Block lower = event.getPlayer().getLocation().getBlock();
-            Block upper = event.getPlayer().getLocation().add(0, 1, 0).getBlock();
-            if (lower.getType() == Material.WATER || lower.getType() == Material.STATIONARY_WATER || upper.getType() == Material.WATER || upper.getType() == Material.STATIONARY_WATER) {
-                ChatUtils.broadcast(game, Defaults.Lang.DIEDFROMWATER.getMessage().replace("<player>", user.getDisplayName()));
-                user.getPlayer().setHealth(0);
-            }
+        if (game.getState() == Game.GameState.RUNNING && WaterHurtHandler.inWater(user)) {
+            user.getInfoHandler(WaterHurtHandler.CREATOR).start();
         }
         if (game.getState() == Game.GameState.COUNTING && (
                 event.getFrom().getBlockX() != event.getTo().getBlockX() ||
@@ -187,7 +182,7 @@ public class FGameListener implements Listener {
             event.getPlayer().teleport(loc);
         }
         FArena a = game.getActiveArena();
-        if (a != null) {
+        if (game.getState() == Game.GameState.RUNNING && a != null) {
             if (a.takeZone.getCuboid().contains(user.getPlayer().getLocation())) {
                 a.takeZone.beginTaking(user);
             }
@@ -206,7 +201,7 @@ public class FGameListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         User user = User.get(event.getEntity());
-        if (user.getGame() != game) return;
+        if (user.getGame() != game || game.getState() != Game.GameState.RUNNING) return;
         User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
         game.playerKilled(killer, user);
         event.setDeathMessage(null);
@@ -215,7 +210,7 @@ public class FGameListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         User user = User.get(event.getPlayer());
-        if (game.getPostWaiting().contains(user)) {
+        if (game.getPostWaiting().contains(user) || game.getState().isPreGame()) {
             event.getPlayer().teleport(game.getActiveArena().lobbyWarp);
         }
     }
@@ -259,5 +254,14 @@ public class FGameListener implements Listener {
             BossBarHandler.get().remove(u);
         }
         game.win((User) e.getTaken());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void foodChangeHighest(FoodLevelChangeEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        Player player = (Player) event.getEntity();
+        User user = User.get(player);
+        if (user.getGame() != game) return;
+        event.setCancelled(true);
     }
 }

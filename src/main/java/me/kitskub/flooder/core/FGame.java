@@ -121,7 +121,8 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     public synchronized void leave(User player) {
         if (!leavingGame(player)) return;
         if (playing.isEmpty()) {
-            Logging.debug("Player left and there are no players in.");
+            Logging.warning("Player left and there are no players in.");
+            System.out.println(postWaiting);
             cancelGame();
             return;
         }
@@ -133,7 +134,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     }
 
     private boolean leavingGame(User player) {
-        if (!playing.remove(player) && !postWaiting.remove(player)) return false;
+        if (!playing.remove(player) & !postWaiting.remove(player)) return false;
 
         // Because in the future, we may want a callback for the class
         player.getInfoHandler(GameClassHandler.CREATOR).setClass(null);
@@ -248,7 +249,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     }
 
     public void win(final User winner) {
-        ChatUtils.broadcast(this, Defaults.Lang.WIN.getMessage().replace("<player>", winner.getPlayerName()));
+        ChatUtils.broadcast(this, Defaults.Lang.WIN.getMessage().replace("<player>", winner.getPlayerName()).replace("<game>", name));
         for (User u : playing) {
             if (u == winner) {
                     Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
@@ -258,7 +259,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
                             }
                     }, 2);
                 getOwningPlugin().getStatManager().get(winner).addWin();
-                } else {
+            } else {
                 final User loser = u;
                     Bukkit.getScheduler().runTaskLater(GameLib.getInstance(), new Runnable() {
                         @Override
@@ -267,8 +268,8 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
                             }
                     }, 2);
                 getOwningPlugin().getStatManager().get(u).addLoss();
-                    }
-                }
+            }
+        }
         cancelGame();
     }
 
@@ -318,6 +319,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         }
         this.waterRunner.start();
 
+        ChatUtils.broadcast(this, Defaults.Lang.GO.getMessage());
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
         return true;
     }

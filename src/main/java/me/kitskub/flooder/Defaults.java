@@ -41,6 +41,7 @@ public class Defaults {
 	NO_PERM("no-perm", "You do not have permission."),
 	TIE("tie", "Nobody won the game <game> because there was a tie."),
 	WIN("win", "<player> has won the game <game>!"),
+	GO("go", "Go!"),
 	ALREADY_COUNTING_DOWN("counting", "<game> is already counting down."),
 	NOT_ENABLED("not-enabled", "<game> is currently not enabled."),
 	NOT_RUNNING("not-running", "<game> is not running."),
