@@ -54,7 +54,7 @@ public class Defaults {
 	CLASS_CANNOT_USE("class-cannot-user", "You do not have permission to use that class!"),
 	CLASS_CHOSEN("class-chosen", "You have chosen '<name>'"),
 	SET_AS_READY("set-as-ready", "You have been set as ready!"),
-    STARTING("starting", "Starting <game> in <time>..."),
+    STARTING("starting", "Starting <game> in..."),
     TAKING_ZONE("taking-zone", "<player> has begun taking the mountain!"),
     NO_TAKE("no-take", "<player> can't take the mountain because <entered> has entered it."),
     TAKEN("taken", "<player> has taken the mountain!"),

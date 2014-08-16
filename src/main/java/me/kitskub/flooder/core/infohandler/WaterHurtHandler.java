@@ -2,6 +2,7 @@ package me.kitskub.flooder.core.infohandler;
 
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Flooder;
+import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.framework.infohandler.GameInfoHandler;
@@ -44,8 +45,10 @@ public class WaterHurtHandler extends GameInfoHandler {
             if (health <= 0) {
                 health = 0;
                 ChatUtils.broadcast(user.getGame(), Defaults.Lang.DIEDFROMWATER.getMessage().replace("<player>", user.getDisplayName()));
+                user.getGame(FGame.class).playerKilled(null, user);
+            } else {
+                user.getPlayer().setHealth(health);
             }
-            user.getPlayer().setHealth(health);
         }
          
     }

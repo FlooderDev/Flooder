@@ -6,10 +6,14 @@ import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FClass;
 import me.kitskub.flooder.core.FGame;
+import me.kitskub.flooder.core.effectitems.Knockback;
+import me.kitskub.flooder.utils.FlooderItem;
 import me.kitskub.gamelib.ClassPlugin;
+import me.kitskub.gamelib.EffectItemPlugin;
 import me.kitskub.gamelib.Games;
 import me.kitskub.gamelib.Perm;
 import me.kitskub.gamelib.commands.CommandHandler;
+import me.kitskub.gamelib.framework.EffectItem;
 import me.kitskub.gamelib.framework.GameClass;
 import me.kitskub.gamelib.framework.GameMaster;
 import me.kitskub.gamelib.framework.Manager;
@@ -28,28 +32,35 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FArena> {
+public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FArena>, EffectItemPlugin<FGame, FArena> {
 	public static final String CMD_ADMIN = "fa", CMD_USER = "f";
 	private static Flooder instance;
 	private static GameMaster<Flooder, FGame, FArena> gameMaster;
 	private static Manager<FClass> classManager;
+    private static Manager<EffectItem> effectItemManager;
 	private static FlatFileStatManager<GlobalPlayerStat> statManager;
     private static PlayerAutoJoinListener pajListener;
     private static ArenaProtectionListener apListener;
     private final CommandHandler fCH = new CommandHandler(CMD_USER, this);
     private final CommandHandler faCH = new CommandHandler(CMD_ADMIN, this);
 
-	@Override
-	public void onEnable() {
+    @Override
+    public void onLoad() {
 		instance = this;
 		Logging.init();
 
 		ConfigurationSerialization.registerClass(FClass.class, "FClass");
-        ConfigurationSerialization.registerClass(Item.class, "Item");
+        ConfigurationSerialization.registerClass(Knockback.class, "Knockback");
+        ConfigurationSerialization.registerClass(FlooderItem.class, "FlooderItem");
+    }
+
+	@Override
+	public void onEnable() {
         Files.INSTANCE.loadAll();
 		gameMaster = new GameMasterImpl<>(FArena.CREATOR, FGame.CREATOR, Files.ARENAS, Files.GAMES, Perms.ADMIN_EDIT_ARENA);
 		classManager = new Manager<>(FClass.class);
 		statManager = new FlatFileStatManager<>(GlobalPlayerStat.CREATOR, Files.USERS.getConfig());
+        effectItemManager = new Manager<>(EffectItem.class);
         loadManagers();
 
 		registerCommands();
@@ -81,11 +92,14 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 		gameMaster.save();
 		classManager.saveTo(Files.CLASSES.getConfig());
 		statManager.save();
+        effectItemManager.saveTo(Files.EFFECT_ITEMS.getConfig());
 
 		Files.INSTANCE.saveAll();
     }
 
     public static void loadManagers() {
+        effectItemManager.loadFrom(Files.EFFECT_ITEMS.getConfig());
+        effectItemManager.add(Knockback.NAME, Knockback.INSTANCE);
 		statManager.load();
 		classManager.loadFrom(Files.CLASSES.getConfig());
 		gameMaster.load();
@@ -147,6 +161,11 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 	public InfoSignListener getInfoSignListener() {
 		return null;
 	}
+
+    @Override
+    public Manager<EffectItem> getEffectItemManager() {
+        return effectItemManager;
+    }
 
 	public Plugin getPlugin() {
 		return this;

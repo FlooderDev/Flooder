@@ -1,22 +1,21 @@
 package me.kitskub.flooder;
 
-import static me.kitskub.flooder.utils.ConfigUtils.*;
-
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import me.kitskub.gamelib.utils.ConfigUtils;
 
+import me.kitskub.gamelib.utils.config.Item;
 import org.bukkit.inventory.ItemStack;
 
 public class ItemConfig {
     public static final String CHANCE = "chance";
 
 	public static Map<ItemStack, Double> getLoot(String itemset, Set<String> checked, String type, String value, double def) {
-		Map<ItemStack, Double> chestLoot = new HashMap<ItemStack, Double>();
+		Map<ItemStack, Double> chestLoot = new HashMap<>();
 		if (checked.contains(itemset)) return chestLoot;
-		for (Item i : getItemSection(Files.ITEMCONFIG.getConfig(), "itemsets." + itemset + "." + type)) {
+		for (Item i : ConfigUtils.getItemSection(Files.ITEMCONFIG.getConfig(), "itemsets." + itemset + "." + type)) {
 			Object get = i.getValues().get(value);
 			chestLoot.put(i.getStack(), (get instanceof Double) ? (Double) get : def);
 		}
@@ -35,16 +34,16 @@ public class ItemConfig {
 	 */
 	public static void addChestLoot(ItemStack item, double chance){
 	    String itemSection = "chest-loot";
-	    List<Item> list = getItemSection(Files.ITEMCONFIG.getConfig(), itemSection);
-	    Map<String, Object> map = new HashMap<String, Object>();
+	    List<Item> list = ConfigUtils.getItemSection(Files.ITEMCONFIG.getConfig(), itemSection);
+	    Map<String, Object> map = new HashMap<>();
 	    map.put(CHANCE, chance);
 	    list.add(new Item(item, map));
 	    Files.ITEMCONFIG.getConfig().set(itemSection, list);
 	}
 
 	public static Map<ItemStack, Double> getChestLoot() {
-		Map<ItemStack, Double> chestLoot = new HashMap<ItemStack, Double>();
-		for (Item i : getItemSection(Files.ITEMCONFIG.getConfig(), "chest-loot")) {
+		Map<ItemStack, Double> chestLoot = new HashMap<>();
+		for (Item i : ConfigUtils.getItemSection(Files.ITEMCONFIG.getConfig(), "chest-loot")) {
 			Object get = i.getValues().get(CHANCE);
 			chestLoot.put(i.getStack(), (get instanceof Double) ? (Double) get : .333);
 		}

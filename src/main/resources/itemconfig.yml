@@ -14,21 +14,7 @@ chest-loot:
       meta-type: UNSPECIFIC
       enchants:
         DURABILITY: 3
-- ==: Item
+- ==: FlooderItem
+  effectItem: Knockback
   values:
-    chance: 1
-  stack:
-    ==: org.bukkit.inventory.ItemStack
-    type: APPLE
-- ==: Item
-  values:
-    chance: 1
-  stack:
-    ==: org.bukkit.inventory.ItemStack
-    type: CAKE
-- ==: Item
-  values:
-    chance: 1
-  stack:
-    ==: org.bukkit.inventory.ItemStack
-    type: EXP_BOTTLE
+    chance: .5

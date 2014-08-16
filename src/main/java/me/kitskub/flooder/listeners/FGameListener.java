@@ -1,6 +1,7 @@
 package me.kitskub.flooder.listeners;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -9,11 +10,13 @@ import java.util.Set;
 import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.ItemConfig;
+import me.kitskub.flooder.Logging;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.flooder.core.infohandler.WaterHurtHandler;
 import me.kitskub.flooder.utils.BossBarHandler;
+import me.kitskub.gamelib.api.event.CountdownTickEvent;
 import me.kitskub.gamelib.api.event.UserClassChosenEvent;
 import me.kitskub.gamelib.api.event.zone.UserLeftZoneEvent;
 import me.kitskub.gamelib.api.event.zone.ZoneTakenEvent;
@@ -106,53 +109,22 @@ public class FGameListener implements Listener {
 		//Contains the whole itemset.
 
 		Map<ItemStack, Double> map = ItemConfig.getChestLoot();
-        int initialSize = map.size();
 		if (map.isEmpty()) {
 			return;
 		}
-		ItemStack last = null;
-
-		//Chest size
-		final int size = chest.getInventory().getSize();
-
-		List<Integer> slots = range(0, size - 1);//By adding this, we know that we won't pick an index that has been used before
-
-        Random random = new Random();
-        //This calculate the amount of items that will be in the chest.
-        //We don't want a lot of duplicates, so if there are a lot of items in the config, we can have more
-        final int amountCount = (int) ((random.nextDouble() + .5) * (map.size() / size));
-		if (amountCount == 0) {
-			return; // If there are no items, don't continue with method
-		}
-		final int minItems = (int) Math.floor(amountCount / 2);
-
-		//Let's calculate what item we can have.
-		Iterator<Map.Entry<ItemStack, Double>> iterator = map.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Map.Entry<ItemStack, Double> entry = iterator.next();
-			if (!iterator.hasNext()) {
-				last = entry.getKey();
-			}
-			double rand = random.nextDouble();
-			if (rand >= entry.getValue()) {
-				iterator.remove();
-			}
-
-		}
-
-		ArrayList<ItemStack> arrayItemStack = new ArrayList<>(map.keySet());
-		if (arrayItemStack.isEmpty()) {
-			arrayItemStack.add(last);//Just in case
-		}
-        //We add the items in the chest.
-		int toRandom = (amountCount - minItems) * (arrayItemStack.size() / initialSize);
-		int amount = toRandom == 0 ? minItems : random.nextInt(toRandom) + minItems;
-		for (int i = 0; i < amount; i++) {
-			ItemStack stack = arrayItemStack.get(random.nextInt(arrayItemStack.size()));
-			int slot = random.nextInt(slots.size());
-			chest.getInventory().setItem(slots.get(slot), stack);
-			slots.remove(slot);
-		}
+        final int size = chest.getInventory().getSize();
+        final Random random = new Random();
+        List<Integer> slots = range(0, size - 1);//By adding this, we know that we won't pick an index that has been used before
+        List<ItemStack> keys = new ArrayList<>(map.keySet());
+        Collections.shuffle(keys);
+        for (Iterator<ItemStack> it = keys.iterator(); it.hasNext() && !slots.isEmpty();) {
+            ItemStack key = it.next();
+            int loc = random.nextInt(slots.size());
+            int slot = slots.get(loc);
+			slots.remove(loc);
+            if (random.nextFloat() > map.get(key)) continue;
+			chest.getInventory().setItem(slot, key);
+        }
 	}
 
 	private static List<Integer> range(int min, int max) {
@@ -170,7 +142,7 @@ public class FGameListener implements Listener {
         if (game.getState() == Game.GameState.RUNNING && WaterHurtHandler.inWater(user)) {
             user.getInfoHandler(WaterHurtHandler.CREATOR).start();
         }
-        if (game.getState() == Game.GameState.COUNTING && (
+        if (game.getState() == Game.GameState.COUNTING && game.frozenPlayers() && (
                 event.getFrom().getBlockX() != event.getTo().getBlockX() ||
                 event.getFrom().getBlockY() != event.getTo().getBlockY() ||
                 event.getFrom().getBlockZ() != event.getTo().getBlockZ()
@@ -193,8 +165,17 @@ public class FGameListener implements Listener {
     public void onPlayerHurt(EntityDamageEvent e) {
         if (!(e.getEntity() instanceof Player)) return;
         User user = User.get((Player) e.getEntity());
-        if (user.getGame() == game && (game.getState().isPreGame() || !game.getActivePlayers().contains(user))) {
-            e.setCancelled(true);
+        if (user.getGame() == game) {
+            if (game.getState().isPreGame()) {
+                e.setCancelled(true);
+            } else {
+                if (user.getPlayer().getHealth() - e.getDamage() <= 0) {
+                    e.setCancelled(true);
+                    game.playerKilled(null, user);
+                }
+            }
+        } else {
+
         }
     }
 
@@ -204,13 +185,14 @@ public class FGameListener implements Listener {
         if (user.getGame() != game || game.getState() != Game.GameState.RUNNING) return;
         User killer = event.getEntity().getKiller() == null ? null : User.get(event.getEntity().getKiller());
         game.playerKilled(killer, user);
+        Logging.warning("Player died and shouldn't have.");
         event.setDeathMessage(null);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         User user = User.get(event.getPlayer());
-        if (game.getPostWaiting().contains(user) || game.getState().isPreGame()) {
+        if (user.getGame() == game && game.getState().isPreGame()) {
             event.getPlayer().teleport(game.getActiveArena().lobbyWarp);
         }
     }
@@ -263,5 +245,12 @@ public class FGameListener implements Listener {
         User user = User.get(player);
         if (user.getGame() != game) return;
         event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onCountdownTick(CountdownTickEvent e) {
+        if (e.getGame() == game && e.getTick() == 10) {
+            game.onFinalCountdown();
+        }
     }
 }
