@@ -25,13 +25,17 @@ import me.kitskub.gamelib.api.event.zone.ZoneTakingTickEvent;
 import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
@@ -251,6 +255,31 @@ public class FGameListener implements Listener {
     public void onCountdownTick(CountdownTickEvent e) {
         if (e.getGame() == game && e.getTick() == 10) {
             game.onFinalCountdown();
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onSpongePlace(BlockPlaceEvent e) {
+        if (e.getBlockReplacedState().getType() == Material.SPONGE) {
+            final Location spongeLoc = e.getBlockPlaced().getLocation();
+            for (int y = Math.max(0, spongeLoc.getBlockY() - 2); y <= Math.min(255, spongeLoc.getBlockY() + 2); y++) {
+                for (int x = spongeLoc.getBlockX() - 2; x <= spongeLoc.getBlockX(); x++) {
+                    for (int z = spongeLoc.getBlockX() - 2; z <= spongeLoc.getBlockX(); z++) {
+                        Location local = new Location(spongeLoc.getWorld(), x, y, z);
+                        Block b = spongeLoc.getWorld().getBlockAt(local);
+                        if (b.getType() == Material.WATER || b.getType() == Material.STATIONARY_WATER) {
+                            game.getResetter().add(local, b.getState());
+                            b.setType(Material.AIR);
+                        }
+                    }
+                }
+            }
+            Bukkit.getScheduler().runTask(Flooder.getInstance(), new Runnable() {
+                @Override
+                public void run() {
+                    spongeLoc.getBlock().setType(Material.AIR);
+                }
+            });
         }
     }
 }

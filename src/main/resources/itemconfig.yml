@@ -4,16 +4,16 @@ chest-loot:
     chance: .5
   stack:
     ==: org.bukkit.inventory.ItemStack
-    type: DIAMOND_PICKAXE
+    type: SPONGE
     # if no amount given, defaults to 0
-    damage: 1
+    damage: 0
     # if no amount given, defaults to 1
     amount: 1
-    meta:
-      ==: ItemMeta
-      meta-type: UNSPECIFIC
-      enchants:
-        DURABILITY: 3
+    #meta:
+    #  ==: ItemMeta
+    #  meta-type: UNSPECIFIC
+    #  enchants:
+    #    DURABILITY: 3
 - ==: FlooderItem
   effectItem: Knockback
   values:
