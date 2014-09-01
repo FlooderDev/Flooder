@@ -15,6 +15,7 @@ import me.kitskub.flooder.listeners.FGameListener;
 import me.kitskub.flooder.listeners.WaterRunner;
 import me.kitskub.flooder.reset.GameResetter;
 import me.kitskub.flooder.utils.BossBarHandler;
+import me.kitskub.flooder.utils.ScoreboardHandler;
 import me.kitskub.gamelib.GameCountdown;
 import me.kitskub.gamelib.GameLib;
 import me.kitskub.gamelib.Logging;
@@ -59,6 +60,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     private final GameResetter resetter;
     private final WaterRunner waterRunner;
     private final EffectItemListener effectItemListener;
+    private ScoreboardHandler scoreboardHandler;
     //Temp
     private final Set<Chest> chests;
 
@@ -206,6 +208,8 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         boolean callEvent = false;
         if (state == GameState.RUNNING) {
             callEvent = true;
+            scoreboardHandler.cancel();
+            scoreboardHandler = null;
             waterRunner.stop();
             resetter.resetChanges();
         }
@@ -303,6 +307,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         availableSpawns.clear();
         resetter.init();
         state = GameState.RUNNING;
+        scoreboardHandler = new ScoreboardHandler(this);
         for (User p : playing) {
             p.getInfoHandler(LastSpawnHandler.CREATOR).setLastSpawn(System.currentTimeMillis());
             p.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 3));
@@ -421,6 +426,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         Bukkit.getPluginManager().callEvent(new PlayerKilledEvent(this, killed, killer));
         killed.getPlayer().teleport(killed.getInfoHandler(SpawnTakenHandler.CREATOR).getSpawnTaken());
         killed.getPlayer().setHealth(killed.getPlayer().getMaxHealth());
+        killed.getStat().get(this).death(PlayerStat.NODODY);
     }
 
     @Override
