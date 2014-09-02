@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -20,6 +21,7 @@ public class Knockback extends FlooderEffectItem {
         super(NAME);
     }
 
+    @Override
     public ItemStack toItemStack() {
         ItemStack stack = new ItemStack(Material.STICK, 1);
         ItemMeta meta = stack.getItemMeta();
@@ -28,14 +30,19 @@ public class Knockback extends FlooderEffectItem {
         return stack;
     }
 
+    @Override
     public void onHurtWith(User damager, User damagee, EntityDamageByEntityEvent event) {
         event.setCancelled(true);
         damagee.getPlayer().setVelocity(damager.getPlayer().getLocation().getDirection().normalize().multiply(10));
     }
 
-    public void onInteractWith(User interacter, User interactee, PlayerInteractEntityEvent event) {
-    }
+    @Override
+    public void onInteractWith(User interacter, User interactee, PlayerInteractEntityEvent event) {}
 
+    @Override
+    public void onInteractWith(User interacter, PlayerInteractEvent event) {}
+
+    @Override
     public Map<String, Object> serialize() {
         return Collections.EMPTY_MAP;
     }

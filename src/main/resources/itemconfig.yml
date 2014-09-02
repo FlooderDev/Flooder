@@ -29,6 +29,22 @@ chest-loot:
     #  meta-type: UNSPECIFIC
     #  enchants:
     #    DURABILITY: 3
+- ==: Item
+  values:
+    chance: .5
+  stack:
+    ==: org.bukkit.inventory.ItemStack
+    type: FEATHER
+    # if no amount given, defaults to 0
+    damage: 0
+    # if no amount given, defaults to 1
+    amount: 1
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: JumpFeather
+    #  enchants:
+    #    DURABILITY: 3
 - ==: FlooderItem
   effectItem: Knockback
   values:

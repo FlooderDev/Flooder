@@ -26,6 +26,7 @@ import me.kitskub.gamelib.framework.Game;
 import me.kitskub.gamelib.framework.User;
 import me.kitskub.gamelib.utils.ChatUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -46,6 +47,7 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class FGameListener implements Listener {
@@ -291,5 +293,34 @@ public class FGameListener implements Listener {
             game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
             e.getBlock().getWorld().spawn(e.getBlock().getLocation().add(0.5, 0.25, 0.5), TNTPrimed.class);
         }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
+        Player player = event.getPlayer();
+        User user = User.get(player);
+        if (user.getGame() != game) return;
+        ItemStack item = player.getItemInHand();
+        event.setCancelled(true);
+        if (item == null || item.getType() != Material.FEATHER || player.getGameMode() != GameMode.SURVIVAL) return;
+
+        player.setAllowFlight(false);
+        player.setFlying(false);
+        player.setVelocity(player.getLocation().getDirection().multiply(1.6).setY(1.0));
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onPlayerMoveOnGround(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        User user = User.get(player);
+        if (user.getGame() != game) return;
+        ItemStack item = player.getItemInHand();
+        if (item == null
+                || item.getType() != Material.FEATHER
+                || player.getGameMode() != GameMode.SURVIVAL
+                || player.getLocation().getBlock().getRelative(0, -1, 0).getType() == Material.AIR
+                || player.isFlying()
+                ) return;
+        player.setAllowFlight(true);
     }
 }
