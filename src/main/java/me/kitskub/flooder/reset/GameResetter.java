@@ -7,6 +7,7 @@ import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.framework.User;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -93,4 +95,14 @@ public class GameResetter implements Listener {
             add(event.getToBlock().getLocation(), event.getToBlock().getState());
         }
 	}
+
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onExplode(EntityExplodeEvent event) {
+        Block block = event.getLocation().getBlock();
+        if (changedBlocks.containsKey(block.getLocation())) {
+            for (Block b : event.blockList()) {
+                add(b.getLocation(), b.getState());
+            }
+        }
+    }
 }

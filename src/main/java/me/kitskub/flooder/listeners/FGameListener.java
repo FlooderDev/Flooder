@@ -31,6 +31,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -280,6 +281,15 @@ public class FGameListener implements Listener {
                     spongeLoc.getBlock().setType(Material.AIR);
                 }
             });
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onTNTPlace(BlockPlaceEvent e) {
+        if (e.getBlockReplacedState().getType() == Material.TNT) {
+            e.setCancelled(true);
+            game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
+            e.getBlock().getWorld().spawn(e.getBlock().getLocation().add(0.5, 0.25, 0.5), TNTPrimed.class);
         }
     }
 }
