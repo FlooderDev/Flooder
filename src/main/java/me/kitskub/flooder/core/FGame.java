@@ -11,6 +11,7 @@ import me.kitskub.flooder.Defaults.Config;
 import me.kitskub.flooder.Defaults.Lang;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
+import me.kitskub.flooder.listeners.AcidRainRunner;
 import me.kitskub.flooder.listeners.FGameListener;
 import me.kitskub.flooder.listeners.WaterRunner;
 import me.kitskub.flooder.reset.GameResetter;
@@ -59,6 +60,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     private final FGameListener listener;
     private final GameResetter resetter;
     private final WaterRunner waterRunner;
+    private final AcidRainRunner acidRainRunner;
     private final EffectItemListener effectItemListener;
     private ScoreboardHandler scoreboardHandler;
     //Temp
@@ -76,6 +78,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         this.listener = new FGameListener(this);
         this.resetter = new GameResetter(this);
         this.waterRunner = new WaterRunner(this);
+        this.acidRainRunner = new AcidRainRunner(this);
         this.effectItemListener = new EffectItemListener(this);
 
         this.chests = new HashSet<>();
@@ -211,6 +214,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             scoreboardHandler.cancel();
             scoreboardHandler = null;
             waterRunner.stop();
+            acidRainRunner.stop();
             resetter.resetChanges();
         }
         list = new ArrayList<>(playing);
@@ -314,6 +318,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             p.getInfoHandler(GameClassHandler.CREATOR).getActiveClass().grantInitialItems(p);
         }
         this.waterRunner.start();
+        this.acidRainRunner.start();
 
         ChatUtils.broadcast(this, Defaults.Lang.GO.getMessage());
         Bukkit.getPluginManager().callEvent(new GameStartedEvent(this));
