@@ -83,9 +83,7 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
     @Override
     public void onDisable() {
         for (FGame game : gameMaster.getGames()) {
-            if (game.getState().isActive()) {
-                game.cancelGame();
-            }
+            game.cancelGame();
         }
 
         saveAll();

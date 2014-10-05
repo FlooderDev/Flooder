@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class AcidRainRunner {
     private final FGame game;
     private Runner runner;
+    private static final Random rand = new Random();
 
     public AcidRainRunner(FGame game) {
         this.game = game;
@@ -36,7 +37,6 @@ public class AcidRainRunner {
 
         @Override
         public void run() {
-            final Random rand = new Random();
             if (remaining.isEmpty()) {
                 remaining = new ArrayList<>(game.getActivePlayers());
             }
@@ -44,32 +44,45 @@ public class AcidRainRunner {
             if (rand.nextFloat() < .5) return;
             final Player p = next.getPlayer();
             p.setPlayerWeather(WeatherType.DOWNFALL);
-            Bukkit.getScheduler().runTaskTimer(Flooder.getInstance(), new BukkitRunnable() {
-                private int timesLeft = 4;
-                @Override
-                public void run() {
-                    double damage = 2 * (1 + rand.nextFloat());
-                    double health = p.getHealth();
-                    if (--timesLeft == 0 || next.getGame() != game || health - damage <= 0) {
-                        cancel();
-                        next.getPlayer().setPlayerWeather(WeatherType.CLEAR);
-                        return;
-                    }
-                    Block block = next.getPlayer().getLocation().getBlock();
-                    int height = 3;
-                    boolean rain = true;
-                    while (height-- > 0) {
-                        block = block.getRelative(BlockFace.UP);
-                        if (block.getType().isSolid()) {
-                            rain = false;
-                            break;
-                        }
-                    }
-                    if (rain) {
-                        next.getPlayer().setHealth(health - damage);
+            Bukkit.getScheduler().runTaskTimer(Flooder.getInstance(), new RainRunnable(next), 20, 20);
+        }
+
+        private class RainRunnable extends BukkitRunnable {
+            private final User next;
+            private int timesLeft = 4;
+
+            public RainRunnable(User next) {
+                this.next = next;
+            }
+
+            @Override
+            public void run() {
+                Player p = next.getPlayer();
+                if (p == null) {
+                    cancel();
+                    return;
+                }
+                double damage = 2 * (1 + rand.nextFloat());
+                double health = p.getHealth();
+                if (--timesLeft == 0 || next.getGame() != game || health - damage <= 0) {
+                    cancel();
+                    next.getPlayer().setPlayerWeather(WeatherType.CLEAR);
+                    return;
+                }
+                Block block = next.getPlayer().getLocation().getBlock();
+                int height = 3;
+                boolean rain = true;
+                while (height-- > 0) {
+                    block = block.getRelative(BlockFace.UP);
+                    if (block.getType().isSolid()) {
+                        rain = false;
+                        break;
                     }
                 }
-            }, 20, 20);
+                if (rain) {
+                    next.getPlayer().setHealth(health - damage);
+                }
+            }
         }
     }
 }
