@@ -267,6 +267,7 @@ public class FGameListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onSpongePlace(BlockPlaceEvent e) {
         if (e.getBlockReplacedState().getType() == Material.SPONGE) {
+            System.out.println("Sponge placed");
             final Location spongeLoc = e.getBlockPlaced().getLocation();
             for (int y = Math.max(0, spongeLoc.getBlockY() - 2); y <= Math.min(255, spongeLoc.getBlockY() + 2); y++) {
                 for (int x = spongeLoc.getBlockX() - 2; x <= spongeLoc.getBlockX(); x++) {
@@ -274,6 +275,7 @@ public class FGameListener implements Listener {
                         Location local = new Location(spongeLoc.getWorld(), x, y, z);
                         Block b = spongeLoc.getWorld().getBlockAt(local);
                         if (b.getType() == Material.WATER || b.getType() == Material.STATIONARY_WATER) {
+                            System.out.println("Block is water");
                             game.getResetter().add(local, b.getState());
                             b.setType(Material.AIR);
                         }
@@ -292,6 +294,7 @@ public class FGameListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onTNTPlace(BlockPlaceEvent e) {
         if (e.getBlockReplacedState().getType() == Material.TNT) {
+            System.out.println("Tnt placed");
             e.getBlock().setType(Material.AIR);
             game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
             TNTPrimed tnt = (TNTPrimed) e.getPlayer().getWorld().spawnEntity(e.getBlock().getLocation(), EntityType.PRIMED_TNT);
