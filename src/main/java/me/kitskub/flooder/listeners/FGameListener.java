@@ -13,6 +13,7 @@ import me.kitskub.flooder.ItemConfig;
 import me.kitskub.flooder.Logging;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FGame;
+import me.kitskub.flooder.core.infohandler.JumpsLeftHandler;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.flooder.core.infohandler.WaterHurtHandler;
 import me.kitskub.flooder.utils.BossBarHandler;
@@ -298,17 +299,35 @@ public class FGameListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    public void onFeatherClick(PlayerInteractEvent e) {
+        User user = User.get(e.getPlayer());
+        if (user.getGame() != game || game.getState() != Game.GameState.RUNNING) return;
+        if (e.hasItem() && (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem().getType() == Material.FEATHER) {
+            user.getInfoHandler(JumpsLeftHandler.CREATOR).addJumps(Defaults.Config.JUMPS_PER_FEATHER.getGlobalInt());
+            ItemStack item = e.getItem();
+            int amount = item.getAmount();
+            amount--;
+            if (amount == 0) {
+                e.getPlayer().setItemInHand(null);
+            } else {
+                item.setAmount(amount);
+                e.getPlayer().setItemInHand(item);
+            }
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerToggleFlight(PlayerToggleFlightEvent event) {
         Player player = event.getPlayer();
         User user = User.get(player);
         if (user.getGame() != game) return;
-        ItemStack item = player.getItemInHand();
+        boolean canJump = user.getInfoHandler(JumpsLeftHandler.CREATOR).useJump();
         event.setCancelled(true);
-        if (item == null || item.getType() != Material.FEATHER || player.getGameMode() != GameMode.SURVIVAL) return;
+        if (!canJump || player.getGameMode() != GameMode.SURVIVAL) return;
 
         player.setAllowFlight(false);
         player.setFlying(false);
-        player.setVelocity(player.getLocation().getDirection().multiply(1.6).setY(1.0));
+        player.setVelocity(player.getVelocity().setY(1.6));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
@@ -316,12 +335,10 @@ public class FGameListener implements Listener {
         Player player = event.getPlayer();
         User user = User.get(player);
         if (user.getGame() != game) return;
-        ItemStack item = player.getItemInHand();
-        if (item == null
-                || item.getType() != Material.FEATHER
+        boolean canJump = user.getInfoHandler(JumpsLeftHandler.CREATOR).getJumpsLeft() > 0;
+        if (!canJump
                 || player.getGameMode() != GameMode.SURVIVAL
                 || player.getLocation().getBlock().getRelative(0, -1, 0).getType() == Material.AIR
-                || player.isFlying()
                 ) return;
         player.setAllowFlight(true);
     }

@@ -93,7 +93,8 @@ public class Defaults {
         ALLOWED_COMMANDS(new ArrayList<String>(), "allowed-commands"),
         GRACE_PERIOD(5, "grace-period"),
         NOTIFY_PERIOD(60, "notify-period"),
-        ZONE_CAPTURE_TIME(20, "zone-capture-time");
+        ZONE_CAPTURE_TIME(20, "zone-capture-time"),
+        JUMPS_PER_FEATHER(3, "jumps-per-feather");
 	
 	
 	private Object value;
