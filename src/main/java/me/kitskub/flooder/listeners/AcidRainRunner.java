@@ -6,7 +6,6 @@ import java.util.Random;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.FGame;
 import me.kitskub.gamelib.framework.User;
-import org.bukkit.Bukkit;
 import org.bukkit.WeatherType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -44,7 +43,7 @@ public class AcidRainRunner {
             if (rand.nextFloat() < .5) return;
             final Player p = next.getPlayer();
             p.setPlayerWeather(WeatherType.DOWNFALL);
-            Bukkit.getScheduler().runTaskTimer(Flooder.getInstance(), new RainRunnable(next), 20, 20);
+            new RainRunnable(next);
         }
 
         private class RainRunnable extends BukkitRunnable {
@@ -53,6 +52,7 @@ public class AcidRainRunner {
 
             public RainRunnable(User next) {
                 this.next = next;
+                runTaskTimer(Flooder.getInstance(), 20, 20);
             }
 
             @Override
