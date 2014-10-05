@@ -59,7 +59,8 @@ public class Defaults {
     NO_TAKE("no-take", "<player> can't take the mountain because <entered> has entered it."),
     TAKEN("taken", "<player> has taken the mountain!"),
     OUTOFTIME("game-out-of-time", "<game> is ending because it ran out of time!"),
-    TIMELEFT("game-time-left", "<game> has <time> minute(s) left.");
+    TIMELEFT("game-time-left", "<game> has <time> minute(s) left."),
+    ON_JOIN_NOT_READY_YET("on-join-not-ready-yet", "Welcome To Flooder! The Game Will Begin When We Have Met The Minimum Player Count!");
 
 
 	private final String config;

@@ -22,3 +22,4 @@ no-take: "<player> can't take the mountain because <entered> has entered it."
 taken: '<player> has taken the mountain!'
 game-out-of-time: '<game> is ending because it ran out of time!'
 game-time-left: '<game> has <time> minute(s) left.'
+on-join-not-ready-yet: 'Welcome To Flooder! The Game Will Begin When We Have Met The Minimum Player Count!'

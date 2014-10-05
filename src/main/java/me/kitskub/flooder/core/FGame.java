@@ -121,6 +121,8 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         Bukkit.getPluginManager().callEvent(new PlayerJoinGameEvent(this, player));
         if (playing.size() >= Config.MIN_READY.getGlobalInt()) {
             startGame();
+        } else {
+            ChatUtils.send(player.getPlayer(), Lang.ON_JOIN_NOT_READY_YET.getMessage());
         }
     }
 
