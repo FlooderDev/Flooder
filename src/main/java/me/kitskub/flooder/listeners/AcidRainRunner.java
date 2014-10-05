@@ -32,7 +32,7 @@ public class AcidRainRunner {
     }
 
     private class Runner extends BukkitRunnable {
-        private List<User> remaining;
+        private List<User> remaining = new ArrayList<>();
 
         @Override
         public void run() {
