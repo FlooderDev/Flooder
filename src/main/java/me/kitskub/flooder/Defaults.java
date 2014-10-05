@@ -94,7 +94,8 @@ public class Defaults {
         GRACE_PERIOD(5, "grace-period"),
         NOTIFY_PERIOD(60, "notify-period"),
         ZONE_CAPTURE_TIME(20, "zone-capture-time"),
-        JUMPS_PER_FEATHER(3, "jumps-per-feather");
+        JUMPS_PER_FEATHER(3, "jumps-per-feather"),
+        AFTER_GAME_SERVER("", "after-game-server");
 	
 	
 	private Object value;

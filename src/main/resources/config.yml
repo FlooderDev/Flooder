@@ -9,3 +9,4 @@ global:
   notify-period: 60
   zone-capture-time: 20
   jumps-per-feather: 3
+  after-game-server: ''

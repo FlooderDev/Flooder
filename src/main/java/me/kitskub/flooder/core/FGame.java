@@ -1,5 +1,6 @@
 package me.kitskub.flooder.core;
 
+import com.google.common.base.Strings;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -223,8 +224,12 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
             resetter.resetChanges();
         }
         list = new ArrayList<>(playing);
+        String server = Strings.emptyToNull(Defaults.Config.AFTER_GAME_SERVER.getGlobalString());
         for (User p : list) {
             leavingGame(p);
+            if (server != null) {
+                Flooder.connectToServer(server, p.getPlayer());
+            }
         }
         if (!playing.isEmpty()) {
             Logging.severe("Playing not empty after cancelGame()");
