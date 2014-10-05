@@ -42,14 +42,14 @@ public class AcidRainRunner {
             }
             final User next = remaining.remove(rand.nextInt(remaining.size()));
             if (rand.nextFloat() < .5) return;
-            Player p = next.getPlayer();
+            final Player p = next.getPlayer();
             p.setPlayerWeather(WeatherType.DOWNFALL);
             Bukkit.getScheduler().runTaskTimer(Flooder.getInstance(), new BukkitRunnable() {
                 private int timesLeft = 4;
                 @Override
                 public void run() {
                     double damage = 2 * (1 + rand.nextFloat());
-                    double health = next.getPlayer().getHealth();
+                    double health = p.getHealth();
                     if (--timesLeft == 0 || next.getGame() != game || health - damage <= 0) {
                         cancel();
                         next.getPlayer().setPlayerWeather(WeatherType.CLEAR);
