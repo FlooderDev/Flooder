@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import me.kitskub.flooder.Defaults;
 import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.Logging;
 import me.kitskub.gamelib.WorldNotFoundException;
@@ -114,8 +115,7 @@ public class FArena extends AbstractArena<Flooder, FGame> {
     }
 
     public int getZoneCaptureTime() {
-        // TODO: config
-        return 10;
+        return Defaults.Config.ZONE_CAPTURE_TIME.getGlobalInt();
     }
 
     public static GameMasterImpl.ArenaCreator<FArena> CREATOR = new FArenaCreator();

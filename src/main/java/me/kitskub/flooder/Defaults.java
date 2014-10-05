@@ -92,7 +92,8 @@ public class Defaults {
         COUNTDOWN(10, "countdown"),
         ALLOWED_COMMANDS(new ArrayList<String>(), "allowed-commands"),
         GRACE_PERIOD(5, "grace-period"),
-        NOTIFY_PERIOD(60, "notify-period");
+        NOTIFY_PERIOD(60, "notify-period"),
+        ZONE_CAPTURE_TIME(20, "zone-capture-time");
 	
 	
 	private Object value;

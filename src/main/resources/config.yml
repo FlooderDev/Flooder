@@ -7,3 +7,4 @@ global:
   countdown: 10
   allowed-commands: []
   notify-period: 60
+  zone-capture-time: 20
