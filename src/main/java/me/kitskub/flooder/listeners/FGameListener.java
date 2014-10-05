@@ -289,9 +289,10 @@ public class FGameListener implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onTNTPlace(BlockPlaceEvent e) {
         if (e.getBlockReplacedState().getType() == Material.TNT) {
-            e.setCancelled(true);
+            e.getBlock().setType(Material.AIR);
             game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
-            e.getBlock().getWorld().spawn(e.getBlock().getLocation().add(0.5, 0.25, 0.5), TNTPrimed.class);
+            TNTPrimed tnt = e.getPlayer().getWorld().spawn(e.getBlock().getLocation(), TNTPrimed.class);
+            tnt.setFuseTicks(0);
         }
     }
 
