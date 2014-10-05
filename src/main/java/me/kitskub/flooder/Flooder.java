@@ -8,7 +8,6 @@ import me.kitskub.flooder.Defaults.Perms;
 import me.kitskub.flooder.core.FArena;
 import me.kitskub.flooder.core.FClass;
 import me.kitskub.flooder.core.FGame;
-import me.kitskub.flooder.core.effectitems.Knockback;
 import me.kitskub.flooder.utils.FlooderItem;
 import me.kitskub.gamelib.ClassPlugin;
 import me.kitskub.gamelib.EffectItemPlugin;
@@ -54,7 +53,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
         Logging.init();
 
         ConfigurationSerialization.registerClass(FClass.class, "FClass");
-        ConfigurationSerialization.registerClass(Knockback.class, "Knockback");
         ConfigurationSerialization.registerClass(FlooderItem.class, "FlooderItem");
     }
 
@@ -105,7 +103,6 @@ public class Flooder extends JavaPlugin implements ClassPlugin<FClass, FGame, FA
 
     public static void loadManagers() {
         effectItemManager.loadFrom(Files.EFFECT_ITEMS.getConfig());
-        effectItemManager.add(Knockback.NAME, Knockback.INSTANCE);
         statManager.load();
         classManager.loadFrom(Files.CLASSES.getConfig());
         gameMaster.load();

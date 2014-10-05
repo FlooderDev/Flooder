@@ -45,7 +45,15 @@ chest-loot:
       display-name: JumpFeather
     #  enchants:
     #    DURABILITY: 3
-- ==: FlooderItem
-  effectItem: Knockback
+- ==: Item
   values:
     chance: .5
+  stack:
+    ==: org.bukkit.inventory.ItemStack
+    type: STICK
+    meta:
+      ==: ItemMeta
+      meta-type: UNSPECIFIC
+      display-name: Knockback Stick
+      enchants:
+        KNOCKBACK: 1
