@@ -261,6 +261,7 @@ public class FGameListener implements Listener {
         if (e.getGame() == game && e.getTick() == 10) {
             game.onFinalCountdown();
         }
+        e.setMessage("Beginning in " + e.getMessage());
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
