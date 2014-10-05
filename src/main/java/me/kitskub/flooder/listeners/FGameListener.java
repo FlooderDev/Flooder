@@ -31,6 +31,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
@@ -291,7 +292,7 @@ public class FGameListener implements Listener {
         if (e.getBlockReplacedState().getType() == Material.TNT) {
             e.getBlock().setType(Material.AIR);
             game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
-            TNTPrimed tnt = e.getPlayer().getWorld().spawn(e.getBlock().getLocation(), TNTPrimed.class);
+            TNTPrimed tnt = (TNTPrimed) e.getPlayer().getWorld().spawnEntity(e.getBlock().getLocation(), EntityType.PRIMED_TNT);
             tnt.setFuseTicks(0);
         }
     }
