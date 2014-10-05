@@ -295,7 +295,7 @@ public class FGameListener implements Listener {
             e.getBlock().setType(Material.AIR);
             game.getResetter().add(e.getBlock().getLocation(), e.getBlock().getState());
             TNTPrimed tnt = (TNTPrimed) e.getPlayer().getWorld().spawnEntity(e.getBlock().getLocation(), EntityType.PRIMED_TNT);
-            tnt.setFuseTicks(5);
+            tnt.setFuseTicks(0);
         }
     }
 
