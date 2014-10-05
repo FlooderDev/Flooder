@@ -6,3 +6,4 @@ global:
   allow-command: false
   countdown: 10
   allowed-commands: []
+  notify-period: 60

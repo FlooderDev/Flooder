@@ -60,7 +60,9 @@ public class Defaults {
     TAKEN("taken", "<player> has taken the mountain!"),
     OUTOFTIME("game-out-of-time", "<game> is ending because it ran out of time!"),
     TIMELEFT("game-time-left", "<game> has <time> minute(s) left."),
-    ON_JOIN_NOT_READY_YET("on-join-not-ready-yet", "Welcome To Flooder! The Game Will Begin When We Have Met The Minimum Player Count!");
+    ON_JOIN_NOT_READY_YET("on-join-not-ready-yet", "Welcome To Flooder! The Game Will Begin When We Have Met The Minimum Player Count!"),
+    NOTIFY_PERIOD("notify-period", "60"),
+    NOTIFY_MESSAGE("notify-message", "The game will be starting soon. There are <players>/<max> Players on right now! We need <left> more to start!");
 
 
 	private final String config;
@@ -89,7 +91,8 @@ public class Defaults {
         ALLOW_COMMAND(false, "allow-command"),
         COUNTDOWN(10, "countdown"),
         ALLOWED_COMMANDS(new ArrayList<String>(), "allowed-commands"),
-        GRACE_PERIOD(5, "grace-period");
+        GRACE_PERIOD(5, "grace-period"),
+        NOTIFY_PERIOD(60, "notify-period");
 	
 	
 	private Object value;

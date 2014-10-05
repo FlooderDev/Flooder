@@ -13,6 +13,7 @@ import me.kitskub.flooder.Flooder;
 import me.kitskub.flooder.core.infohandler.SpawnTakenHandler;
 import me.kitskub.flooder.listeners.AcidRainRunner;
 import me.kitskub.flooder.listeners.FGameListener;
+import me.kitskub.flooder.listeners.NotifyRunnable;
 import me.kitskub.flooder.listeners.WaterRunner;
 import me.kitskub.flooder.reset.GameResetter;
 import me.kitskub.flooder.utils.BossBarHandler;
@@ -57,6 +58,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
     private final Set<User> playing;
     private final Set<Location> availableSpawns;
     //Listeners
+    private final NotifyRunnable notifyListener;
     private final FGameListener listener;
     private final GameResetter resetter;
     private final WaterRunner waterRunner;
@@ -75,6 +77,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
         this.playing = new HashSet<>();
         this.availableSpawns = new HashSet<>();
 
+        this.notifyListener = new NotifyRunnable(this);
         this.listener = new FGameListener(this);
         this.resetter = new GameResetter(this);
         this.waterRunner = new WaterRunner(this);
@@ -289,6 +292,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 		if (playing.size() < 2 || playing.size() < Config.MIN_PLAYERS.getGlobalInt()) {
             return sendErrorAndReturnFalse(cs, String.format("There are not enough players in %s", name));
         }
+        notifyListener.stop();
 		if (countdown == null) {
             if (seconds > 0) {
                 countdown = new GameCountdown(this, seconds, cs, Lang.STARTING.getMessage());
@@ -391,6 +395,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
         Bukkit.getPluginManager().registerEvents(listener, Flooder.getInstance());
         Bukkit.getPluginManager().registerEvents(effectItemListener, Flooder.getInstance());
+        notifyListener.start();
     }
 
     private void clearArena() {
@@ -400,6 +405,7 @@ public class FGame extends AbstractGame<Flooder, FGame, FArena> implements Timed
 
         HandlerList.unregisterAll(listener);
         HandlerList.unregisterAll(effectItemListener);
+        notifyListener.stop();
 
         for (Chest c : chests) {
             c.getBlockInventory().clear();
